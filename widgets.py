@@ -1,9 +1,77 @@
 from PyQt5 import uic
 from PyQt5.QtCore import QDate
-from PyQt5.QtWidgets import QWidget, QDialog, QInputDialog
+from PyQt5.QtWidgets import QDialog, QInputDialog
 from datetime import date
 
 import sqlite3
+
+LENGTH = 9
+SEQUENCES = ("qwertyuiop", "asdfghjkl", "zxcvbnm", "йцукенгшщзхъ", "фывапролджэё", "ячсмитьбю")
+DIGITS = "0123456789"
+
+
+class LoginError(Exception):
+    pass
+
+
+class PasswordError(Exception):
+    pass
+
+
+class LengthError(PasswordError):
+    pass
+
+
+class LetterError(PasswordError):
+    pass
+
+
+class DigitError(PasswordError):
+    pass
+
+
+class SequenceError(PasswordError):
+    pass
+
+
+class IsCorrectPassword:
+    def __init__(self, password: str):
+        self.password = password
+
+    def is_valid_length(self):
+        return len(self.password) > 8
+
+    def is_valid_registers(self):
+        return self.password != self.password.lower() and self.password != self.password.upper()
+
+    def contains_digit(self):
+        for digit in DIGITS:
+            if digit in self.password:
+                return True
+        return False
+
+    def is_valid_sequences(self):
+        for index, sym in enumerate(self.password):
+            for sequence in SEQUENCES:
+                if sym.lower() in sequence:
+                    sym_index = sequence.index(sym.lower())
+                    if sym_index < len(sequence) - 2 and index < len(self.password) - 2:
+                        if (self.password[index + 1].lower(), self.password[index + 2].lower()) \
+                                == (sequence[sym_index + 1], sequence[sym_index + 2]):
+                            return False
+                    break
+        return True
+
+    def check_password(self):
+        if not self.is_valid_length():
+            raise LengthError("Длина пароля <= 8")
+        if not self.is_valid_registers():
+            raise LetterError("В пароле символы одного регистра")
+        if not self.contains_digit():
+            raise DigitError("В пароле не содержится цифра")
+        if not self.is_valid_sequences():
+            raise SequenceError("В пароле есть последовательность из символов на клавиатуре")
+        return True
 
 
 class NoteWindow(QDialog):
@@ -17,7 +85,7 @@ class NoteWindow(QDialog):
         self.date = ""
         self.cost = ""
 
-        uic.loadUi("new_note_window.ui", self)
+        uic.loadUi("ui/new_note_window.ui", self)
         self.setWindowTitle("Новая запись")
 
         cur = self.con.cursor()
@@ -53,13 +121,101 @@ WHERE Title = "{self.select_category.currentText()}"''').fetchone()[0]
 VALUES({self.user_id}, {self.category}, "{self.date}", {self.cost})''')
         cur.close()
         self.con.commit()
+        self.con.close()
 
         self.close()
 
 
-class LoginWidget(QWidget):
-    pass
+class SignInWindow(QDialog):
+    def __init__(self, parent=None):
+        super(SignInWindow, self).__init__(parent)
+
+        self.con = sqlite3.connect("Cost.db")
+
+        uic.loadUi("ui/sign_in_window.ui", self)
+
+        self.button_sign_in.clicked.connect(self.signIn)
+
+    def signIn(self):
+        login = self.input_login.text()
+        password = self.input_password.text()
+
+        try:
+            if not login:
+                raise LoginError("В поле логина ничего не введено")
+            if not password:
+                raise PasswordError("В поле пароля ничего не введено")
+
+            cur = self.con.cursor()
+            result = cur.execute(f'''SELECT UserId, Password FROM User 
+WHERE Login = "{login}"''').fetchone()
+            if result:
+                if result[1] == password:
+                    self.parent().user_id = result[0]
+                else:
+                    raise PasswordError("Неверный пароль")
+            else:
+                raise LoginError("Неправильный логин")
+        except LoginError as error:
+            self.status.setText(f"{error}")
+            return
+        except PasswordError as error:
+            self.status.setText(f"{error}")
+            return
+
+        self.con.close()
+        self.close()
 
 
-class Registration:
-    pass
+class SignUpWindow(QDialog):
+    def __init__(self, parent=None):
+        super(SignUpWindow, self).__init__(parent)
+
+        self.con = sqlite3.connect("Cost.db")
+
+        uic.loadUi("ui/sign_up_window.ui", self)
+
+        self.button_sign_up.clicked.connect(self.signUp)
+
+    def signUp(self):
+        login = self.input_login.text()
+        password = IsCorrectPassword(self.input_password.text())
+
+        try:
+            if not login:
+                raise LoginError("В поле логина ничего не введено")
+            if not password:
+                raise PasswordError("В поле пароля ничего не введено")
+
+            cur = self.con.cursor()
+            if cur.execute(f'SELECT * FROM User WHERE Login = "{login}"').fetchone() is not None:
+                raise LoginError("В системе уже имеется пользователь с таким логином")
+            if password.check_password():
+                cur.execute(f'''INSERT INTO USER(Login, Password) 
+VALUES("{login}", "{password.password}")''')
+        except LoginError as error:
+            self.status.setText(f"{error}")
+            return
+        except LengthError as error:
+            self.status.setText(f"{error}")
+            return
+        except LetterError as error:
+            self.status.setText(f"{error}")
+            return
+        except DigitError as error:
+            self.status.setText(f"{error}")
+            return
+        except SequenceError as error:
+            self.status.setText(f"{error}")
+            return
+        except PasswordError as error:
+            self.status.setText(f"{error}")
+            return
+
+        self.con.commit()
+
+        self.parent().user_id = cur.execute(f'''SELECT UserId FROM User 
+WHERE Login = "{login}"''').fetchone()
+
+        self.con.close()
+        self.close()

@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1200</width>
-    <height>800</height>
+    <height>831</height>
    </rect>
   </property>
   <property name="font">
@@ -25,7 +25,7 @@
      <rect>
       <x>10</x>
       <y>10</y>
-      <width>391</width>
+      <width>321</width>
       <height>41</height>
      </rect>
     </property>
@@ -58,8 +58,8 @@
      <rect>
       <x>10</x>
       <y>60</y>
-      <width>391</width>
-      <height>711</height>
+      <width>321</width>
+      <height>681</height>
      </rect>
     </property>
     <property name="font">
@@ -69,8 +69,44 @@
      </font>
     </property>
    </widget>
+   <widget class="QPushButton" name="button_exit">
+    <property name="geometry">
+     <rect>
+      <x>1010</x>
+      <y>750</y>
+      <width>181</width>
+      <height>23</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>14</pointsize>
+     </font>
+    </property>
+    <property name="text">
+     <string>Выйти из системы</string>
+    </property>
+   </widget>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
+  <widget class="QMenuBar" name="menuBar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>1200</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="menu">
+    <property name="title">
+     <string>Вход в аккаунт</string>
+    </property>
+    <addaction name="sign_in"/>
+    <addaction name="sign_up"/>
+   </widget>
+   <addaction name="menu"/>
+  </widget>
   <action name="sort_by_category">
    <property name="text">
     <string>По категории</string>
@@ -84,6 +120,16 @@
   <action name="sort_by_cost">
    <property name="text">
     <string>По цене</string>
+   </property>
+  </action>
+  <action name="sign_in">
+   <property name="text">
+    <string>Войти</string>
+   </property>
+  </action>
+  <action name="sign_up">
+   <property name="text">
+    <string>Зарегестрироваться</string>
    </property>
   </action>
  </widget>
