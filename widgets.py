@@ -95,6 +95,7 @@ class NoteWindow(QDialog):
         categories = map(lambda item: item[0], cur.execute("SELECT Title FROM Category").fetchall())
         self.select_category.addItems(categories)
 
+        self.select_cost.setMinimum(1)
         self.select_cost.setMaximum(10e9)
 
         self.button_add.clicked.connect(self.add_note)

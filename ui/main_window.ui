@@ -97,9 +97,9 @@
     <addaction name="operation_remove"/>
    </widget>
    <addaction name="authorization"/>
+   <addaction name="operations"/>
    <addaction name="sort"/>
    <addaction name="filter"/>
-   <addaction name="operations"/>
   </widget>
   <action name="sort_by_category">
    <property name="text">
