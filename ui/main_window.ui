@@ -20,46 +20,13 @@
    <string>MainWindow</string>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <widget class="QWidget" name="layoutWidget">
+   <widget class="QTableWidget" name="tableWidget">
     <property name="geometry">
      <rect>
       <x>10</x>
       <y>10</y>
       <width>321</width>
-      <height>41</height>
-     </rect>
-    </property>
-    <layout class="QHBoxLayout" name="horizontalLayout">
-     <item>
-      <widget class="QPushButton" name="button_add">
-       <property name="text">
-        <string>Добавить</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QPushButton" name="button_edit">
-       <property name="text">
-        <string>Изменить</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QPushButton" name="button_remove">
-       <property name="text">
-        <string>Удалить</string>
-       </property>
-      </widget>
-     </item>
-    </layout>
-   </widget>
-   <widget class="QTableWidget" name="tableWidget">
-    <property name="geometry">
-     <rect>
-      <x>10</x>
-      <y>60</y>
-      <width>321</width>
-      <height>681</height>
+      <height>731</height>
      </rect>
     </property>
     <property name="font">
@@ -98,14 +65,41 @@
      <height>21</height>
     </rect>
    </property>
-   <widget class="QMenu" name="menu">
+   <widget class="QMenu" name="authorization">
     <property name="title">
-     <string>Вход в аккаунт</string>
+     <string>Авторизация</string>
     </property>
     <addaction name="sign_in"/>
     <addaction name="sign_up"/>
    </widget>
-   <addaction name="menu"/>
+   <widget class="QMenu" name="sort">
+    <property name="title">
+     <string>Сортировка</string>
+    </property>
+    <addaction name="sorting_by_category"/>
+    <addaction name="sorting_by_date"/>
+    <addaction name="sorting_by_cost"/>
+   </widget>
+   <widget class="QMenu" name="filter">
+    <property name="title">
+     <string>Фильтр</string>
+    </property>
+    <addaction name="filter_by_categories"/>
+    <addaction name="filter_by_dates"/>
+    <addaction name="filter_by_costs"/>
+   </widget>
+   <widget class="QMenu" name="operations">
+    <property name="title">
+     <string>Операции с записями</string>
+    </property>
+    <addaction name="operation_add"/>
+    <addaction name="operation_edit"/>
+    <addaction name="operation_remove"/>
+   </widget>
+   <addaction name="authorization"/>
+   <addaction name="sort"/>
+   <addaction name="filter"/>
+   <addaction name="operations"/>
   </widget>
   <action name="sort_by_category">
    <property name="text">
@@ -129,7 +123,52 @@
   </action>
   <action name="sign_up">
    <property name="text">
-    <string>Зарегестрироваться</string>
+    <string>Зарегистрироваться</string>
+   </property>
+  </action>
+  <action name="sorting_by_category">
+   <property name="text">
+    <string>По дате</string>
+   </property>
+  </action>
+  <action name="sorting_by_date">
+   <property name="text">
+    <string>По категории</string>
+   </property>
+  </action>
+  <action name="sorting_by_cost">
+   <property name="text">
+    <string>По цене</string>
+   </property>
+  </action>
+  <action name="filter_by_categories">
+   <property name="text">
+    <string>По категориям</string>
+   </property>
+  </action>
+  <action name="filter_by_dates">
+   <property name="text">
+    <string>По датам</string>
+   </property>
+  </action>
+  <action name="filter_by_costs">
+   <property name="text">
+    <string>По ценам</string>
+   </property>
+  </action>
+  <action name="operation_add">
+   <property name="text">
+    <string>Добавить</string>
+   </property>
+  </action>
+  <action name="operation_edit">
+   <property name="text">
+    <string>Изменить</string>
+   </property>
+  </action>
+  <action name="operation_remove">
+   <property name="text">
+    <string>Удалить</string>
    </property>
   </action>
  </widget>

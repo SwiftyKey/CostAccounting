@@ -1,13 +1,16 @@
-from PyQt5 import uic
-from PyQt5.QtCore import QDate
+from PyQt5 import uic, QtGui
 from PyQt5.QtWidgets import QDialog, QInputDialog
-from datetime import date
 
 import sqlite3
 
 LENGTH = 9
 SEQUENCES = ("qwertyuiop", "asdfghjkl", "zxcvbnm", "йцукенгшщзхъ", "фывапролджэё", "ячсмитьбю")
 DIGITS = "0123456789"
+
+
+def change_border(widget, color):
+    widget.setFont(QtGui.QFont('TimesNewRoman', 14))
+    widget.setStyleSheet(f'''border-style: solid; border-width: 1px; border-color: {color};''')
 
 
 class LoginError(Exception):
@@ -92,10 +95,11 @@ class NoteWindow(QDialog):
         categories = map(lambda item: item[0], cur.execute("SELECT Title FROM Category").fetchall())
         self.select_category.addItems(categories)
 
-        self.select_date.setMinimumDate(QDate(date.today()))
+        self.select_cost.setMaximum(10e9)
 
         self.button_add.clicked.connect(self.add_note)
         self.button_create_category.clicked.connect(self.new_category)
+        self.button_exit.clicked.connect(self.exit)
 
     def new_category(self):
         title = QInputDialog.getText(self, "Новая категория",
@@ -114,7 +118,7 @@ class NoteWindow(QDialog):
 
         self.category = cur.execute(f'''SELECT CategoryId FROM Category 
 WHERE Title = "{self.select_category.currentText()}"''').fetchone()[0]
-        self.date = self.select_date.date().toString('yyyy-MM-dd')
+        self.date = self.select_date.selectedDate().toString("yyyy-MM-dd")
         self.cost = self.select_cost.value()
 
         cur.execute(f'''INSERT INTO Cost(UserId, CategoryId, Date, SumCost) 
@@ -123,6 +127,9 @@ VALUES({self.user_id}, {self.category}, "{self.date}", {self.cost})''')
         self.con.commit()
         self.con.close()
 
+        self.exit()
+
+    def exit(self):
         self.close()
 
 
@@ -143,6 +150,7 @@ class SignInWindow(QDialog):
         try:
             if not login:
                 raise LoginError("В поле логина ничего не введено")
+
             if not password:
                 raise PasswordError("В поле пароля ничего не введено")
 
@@ -152,19 +160,25 @@ WHERE Login = "{login}"''').fetchone()
             if result:
                 if result[1] == password:
                     self.parent().user_id = result[0]
+                    change_border(self.input_login, "green")
+                    change_border(self.input_password, "black")
                 else:
                     raise PasswordError("Неверный пароль")
             else:
                 raise LoginError("Неправильный логин")
         except LoginError as error:
-            self.status.setText(f"{error}")
+            self.error_handler(error, self.input_login, "red")
             return
         except PasswordError as error:
-            self.status.setText(f"{error}")
+            self.error_handler(error, self.input_password, "red")
             return
 
         self.con.close()
         self.close()
+
+    def error_handler(self, error, widget, color):
+        self.status.setText(f"{error}")
+        change_border(widget, color)
 
 
 class SignUpWindow(QDialog):
@@ -184,32 +198,36 @@ class SignUpWindow(QDialog):
         try:
             if not login:
                 raise LoginError("В поле логина ничего не введено")
+
             if not password:
                 raise PasswordError("В поле пароля ничего не введено")
 
             cur = self.con.cursor()
             if cur.execute(f'SELECT * FROM User WHERE Login = "{login}"').fetchone() is not None:
                 raise LoginError("В системе уже имеется пользователь с таким логином")
+
             if password.check_password():
                 cur.execute(f'''INSERT INTO USER(Login, Password) 
 VALUES("{login}", "{password.password}")''')
+                change_border(self.input_password, "black")
+                change_border(self.input_login, "black")
         except LoginError as error:
-            self.status.setText(f"{error}")
+            self.error_handler(error, self.input_login, "red")
             return
         except LengthError as error:
-            self.status.setText(f"{error}")
+            self.error_handler(error, self.input_password, "red")
             return
         except LetterError as error:
-            self.status.setText(f"{error}")
+            self.error_handler(error, self.input_password, "red")
             return
         except DigitError as error:
-            self.status.setText(f"{error}")
+            self.error_handler(error, self.input_password, "red")
             return
         except SequenceError as error:
-            self.status.setText(f"{error}")
+            self.error_handler(error, self.input_password, "red")
             return
         except PasswordError as error:
-            self.status.setText(f"{error}")
+            self.error_handler(error, self.input_password, "red")
             return
 
         self.con.commit()
@@ -219,3 +237,7 @@ WHERE Login = "{login}"''').fetchone()
 
         self.con.close()
         self.close()
+
+    def error_handler(self, error, widget, color):
+        self.status.setText(f"{error}")
+        change_border(widget, color)

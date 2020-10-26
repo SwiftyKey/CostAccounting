@@ -27,13 +27,14 @@ class Window(QMainWindow):
 
         self.showNotes()
 
-        self.button_add.clicked.connect(self.add)
-        self.button_remove.clicked.connect(self.remove)
-        self.button_edit.clicked.connect(self.edit)
-        self.button_exit.clicked.connect(self.exit)
+        self.operation_add.triggered.connect(self.add)
+        self.operation_edit.triggered.connect(self.edit)
+        self.operation_remove.triggered.connect(self.remove)
 
         self.sign_in.triggered.connect(self.signIn)
         self.sign_up.triggered.connect(self.signUp)
+
+        self.button_exit.clicked.connect(self.exit)
 
     def getCostData(self):
         if self.user_id:
@@ -58,6 +59,9 @@ class Window(QMainWindow):
         pass
 
     def add(self):
+        if self.user_id is None:
+            self.statusBar().showMessage("Вы не вошли в аккаунт")
+            return
         new_note_form = NoteWindow(self.user_id, self)
         new_note_form.exec_()
 
@@ -65,10 +69,14 @@ class Window(QMainWindow):
         self.showNotes()
 
     def remove(self):
-        pass
+        if self.user_id is None:
+            self.statusBar().showMessage("Вы не вошли в аккаунт")
+            return
 
     def edit(self):
-        pass
+        if self.user_id is None:
+            self.statusBar().showMessage("Вы не вошли в аккаунт")
+            return
 
     def signIn(self):
         sign_in_form = SignInWindow(self)

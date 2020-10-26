@@ -130,7 +130,7 @@
       </spacer>
      </item>
      <item>
-      <widget class="QPushButton" name="button_add">
+      <widget class="QPushButton" name="button_edit">
        <property name="font">
         <font>
          <family>Times New Roman</family>
@@ -138,7 +138,7 @@
         </font>
        </property>
        <property name="text">
-        <string>Добавить</string>
+        <string>Изменить</string>
        </property>
       </widget>
      </item>
