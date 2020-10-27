@@ -76,9 +76,9 @@
     <property name="title">
      <string>Сортировка</string>
     </property>
-    <addaction name="sorting_by_category"/>
-    <addaction name="sorting_by_date"/>
-    <addaction name="sorting_by_cost"/>
+    <addaction name="sort_by_category"/>
+    <addaction name="sort_by_date"/>
+    <addaction name="sort_by_cost"/>
    </widget>
    <widget class="QMenu" name="filter">
     <property name="title">
@@ -101,21 +101,6 @@
    <addaction name="sort"/>
    <addaction name="filter"/>
   </widget>
-  <action name="sort_by_category">
-   <property name="text">
-    <string>По категории</string>
-   </property>
-  </action>
-  <action name="sort_by_date">
-   <property name="text">
-    <string>По дате</string>
-   </property>
-  </action>
-  <action name="sort_by_cost">
-   <property name="text">
-    <string>По цене</string>
-   </property>
-  </action>
   <action name="sign_in">
    <property name="text">
     <string>Войти</string>
@@ -126,17 +111,17 @@
     <string>Зарегистрироваться</string>
    </property>
   </action>
-  <action name="sorting_by_category">
+  <action name="sort_by_category">
    <property name="text">
     <string>По дате</string>
    </property>
   </action>
-  <action name="sorting_by_date">
+  <action name="sort_by_date">
    <property name="text">
     <string>По категории</string>
    </property>
   </action>
-  <action name="sorting_by_cost">
+  <action name="sort_by_cost">
    <property name="text">
     <string>По цене</string>
    </property>

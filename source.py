@@ -61,7 +61,11 @@ class Window(QMainWindow):
     def add(self):
         if self.user_id is None:
             self.statusBar().showMessage("Вы не вошли в аккаунт")
+            self.statusbar.setStyleSheet("background-color:red")
             return
+        else:
+            self.statusBar().setStyleSheet("background-color:white")
+
         new_note_form = NoteWindow(self.user_id, self)
         new_note_form.exec_()
 
@@ -71,12 +75,18 @@ class Window(QMainWindow):
     def remove(self):
         if self.user_id is None:
             self.statusBar().showMessage("Вы не вошли в аккаунт")
+            self.statusbar.setStyleSheet("background-color:red")
             return
+        else:
+            self.statusBar.setStyleSheet("background-color:white")
 
     def edit(self):
         if self.user_id is None:
             self.statusBar().showMessage("Вы не вошли в аккаунт")
+            self.statusbar.setStyleSheet("background-color:red")
             return
+        else:
+            self.statusBar.setStyleSheet("background-color:white")
 
     def signIn(self):
         sign_in_form = SignInWindow(self)
@@ -88,7 +98,10 @@ class Window(QMainWindow):
     def signUp(self):
         if self.user_id:
             self.statusBar().showMessage("Чтобы зарегестрироваться выйдите из текущего аккаунта")
+            self.statusbar.setStyleSheet("background-color:red")
             return
+        else:
+            self.statusBar().setStyleSheet("background-color:white")
 
         sign_up_form = SignUpWindow(self)
         sign_up_form.exec_()
@@ -99,7 +112,10 @@ class Window(QMainWindow):
     def exit(self):
         if self.user_id is None:
             self.statusBar().showMessage("Нельзя выйти, так как вы еще не вошли ни в один аккаунт")
+            self.statusbar.setStyleSheet("background-color:red")
             return
+        else:
+            self.statusBar().setStyleSheet("background-color:white")
 
         self.table.clear()
         self.showNotes()
