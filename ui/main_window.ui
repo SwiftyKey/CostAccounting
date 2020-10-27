@@ -111,12 +111,12 @@
     <string>Зарегистрироваться</string>
    </property>
   </action>
-  <action name="sort_by_category">
+  <action name="sort_by_date">
    <property name="text">
     <string>По дате</string>
    </property>
   </action>
-  <action name="sort_by_date">
+  <action name="sort_by_category">
    <property name="text">
     <string>По категории</string>
    </property>
