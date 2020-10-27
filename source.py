@@ -41,8 +41,7 @@ class Window(QMainWindow):
 
         self.sign_in.triggered.connect(self.signIn)
         self.sign_up.triggered.connect(self.signUp)
-
-        self.button_exit.clicked.connect(self.exit)
+        self.action_exit.triggered.connect(self.exit)
 
     def getCostData(self):
         if self.user_id:
@@ -64,8 +63,6 @@ class Window(QMainWindow):
                     self.tableWidget.setItem(i, j, QTableWidgetItem(str(value)))
 
     def add(self):
-        self.statusBarChange()
-
         new_note_form = NoteWindow(self.user_id, self)
         new_note_form.exec_()
 
@@ -73,30 +70,32 @@ class Window(QMainWindow):
         self.showNotes()
 
     def remove(self):
-        self.statusBarChange()
+        pass
 
     def edit(self):
-        self.statusBarChange()
+        pass
 
     def filterByCategories(self):
-        self.statusBarChange()
+        pass
 
     def filterByDates(self):
-        self.statusBarChange()
+        pass
 
     def filterByCosts(self):
-        self.statusBarChange()
+        pass
 
     def sortByCategories(self):
-        self.statusBarChange()
+        pass
 
     def sortByDates(self):
-        self.statusBarChange()
+        pass
 
     def sortByCosts(self):
-        self.statusBarChange()
+        pass
 
     def signIn(self):
+        self.statusBarChange("Выйдите из аккаунта, чтобы войти в другой аккаунт", self.user_id)
+
         sign_in_form = SignInWindow(self)
         sign_in_form.exec_()
 
@@ -104,7 +103,7 @@ class Window(QMainWindow):
         self.showNotes()
 
     def signUp(self):
-        self.statusBarChange()
+        self.statusBarChange("Выйдите из аккаунта, чтобы зарегистрироваться", self.user_id)
 
         sign_up_form = SignUpWindow(self)
         sign_up_form.exec_()
@@ -113,15 +112,16 @@ class Window(QMainWindow):
         self.showNotes()
 
     def exit(self):
+        self.statusBarChange("Нельзя выйти, так как вы не вошли в аккаунт", self.user_id is None)
 
         self.table.clear()
         self.showNotes()
 
         self.user_id = None
 
-    def statusBarChange(self):
-        if self.user_id is None:
-            self.statusBar().showMessage("Нельзя выйти, так как вы еще не вошли ни в один аккаунт")
+    def statusBarChange(self, message, condition):
+        if condition:
+            self.statusBar().showMessage(message)
             self.statusbar.setStyleSheet("background-color:red")
             return
         else:

@@ -9,7 +9,7 @@ DIGITS = "0123456789"
 
 
 def change_border(widget, color):
-    widget.setFont(QtGui.QFont('TimesNewRoman', 14))
+    widget.setFont(QtGui.QFont('Times', 14))
     widget.setStyleSheet(f'''border-style: solid; border-width: 1px; border-color: {color};''')
 
 
@@ -123,14 +123,14 @@ WHERE Title = "{self.select_category.currentText()}"''').fetchone()[0]
         self.cost = self.select_cost.value()
 
         cur.execute(f'''INSERT INTO Cost(UserId, CategoryId, Date, SumCost) 
-VALUES({self.user_id}, {self.category}, "{self.date}", {self.cost})''')
+VALUES({self.user_id}, {self.category}, {self.date}, {self.cost})''')
         cur.close()
         self.con.commit()
-        self.con.close()
 
         self.exit()
 
     def exit(self):
+        self.con.close()
         self.close()
 
 
@@ -174,6 +174,7 @@ WHERE Login = "{login}"''').fetchone()
             self.error_handler(error, self.input_password, "red")
             return
 
+        cur.close()
         self.con.close()
         self.close()
 
@@ -215,18 +216,6 @@ VALUES("{login}", "{password.password}")''')
         except LoginError as error:
             self.error_handler(error, self.input_login, "red")
             return
-        except LengthError as error:
-            self.error_handler(error, self.input_password, "red")
-            return
-        except LetterError as error:
-            self.error_handler(error, self.input_password, "red")
-            return
-        except DigitError as error:
-            self.error_handler(error, self.input_password, "red")
-            return
-        except SequenceError as error:
-            self.error_handler(error, self.input_password, "red")
-            return
         except PasswordError as error:
             self.error_handler(error, self.input_password, "red")
             return
@@ -236,6 +225,7 @@ VALUES("{login}", "{password.password}")''')
         self.parent().user_id = cur.execute(f'''SELECT UserId FROM User 
 WHERE Login = "{login}"''').fetchone()
 
+        cur.close()
         self.con.close()
         self.close()
 

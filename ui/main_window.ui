@@ -26,7 +26,7 @@
       <x>10</x>
       <y>10</y>
       <width>321</width>
-      <height>731</height>
+      <height>771</height>
      </rect>
     </property>
     <property name="font">
@@ -34,24 +34,6 @@
       <family>Times New Roman</family>
       <pointsize>16</pointsize>
      </font>
-    </property>
-   </widget>
-   <widget class="QPushButton" name="button_exit">
-    <property name="geometry">
-     <rect>
-      <x>1010</x>
-      <y>750</y>
-      <width>181</width>
-      <height>23</height>
-     </rect>
-    </property>
-    <property name="font">
-     <font>
-      <pointsize>14</pointsize>
-     </font>
-    </property>
-    <property name="text">
-     <string>Выйти из системы</string>
     </property>
    </widget>
   </widget>
@@ -67,10 +49,11 @@
    </property>
    <widget class="QMenu" name="authorization">
     <property name="title">
-     <string>Авторизация</string>
+     <string>Взаимодействие с аккаунтом</string>
     </property>
     <addaction name="sign_in"/>
     <addaction name="sign_up"/>
+    <addaction name="action_exit"/>
    </widget>
    <widget class="QMenu" name="sort">
     <property name="title">
@@ -154,6 +137,11 @@
   <action name="operation_remove">
    <property name="text">
     <string>Удалить</string>
+   </property>
+  </action>
+  <action name="action_exit">
+   <property name="text">
+    <string>Выйти из системы</string>
    </property>
   </action>
  </widget>
