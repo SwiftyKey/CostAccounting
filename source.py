@@ -137,4 +137,3 @@ if __name__ == '__main__':
     main = Window()
     main.show()
     sys.exit(app.exec_())
->>>>>>> 54f57eae03652d273928d8a8e91aaf1fe5c947b2
