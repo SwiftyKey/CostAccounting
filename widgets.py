@@ -123,7 +123,7 @@ WHERE Title = "{self.select_category.currentText()}"''').fetchone()[0]
         self.cost = self.select_cost.value()
 
         cur.execute(f'''INSERT INTO Cost(UserId, CategoryId, Date, SumCost) 
-VALUES({self.user_id}, {self.category}, {self.date}, {self.cost})''')
+VALUES({self.user_id}, {self.category}, "{self.date}", {self.cost})''')
         cur.close()
         self.con.commit()
 
