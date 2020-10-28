@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>1200</width>
+    <height>831</height>
+   </rect>
+  </property>
+  <property name="font">
+   <font>
+    <family>Times New Roman</family>
+    <pointsize>12</pointsize>
+   </font>
+  </property>
+  <property name="windowTitle">
+   <string>MainWindow</string>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <widget class="QTableWidget" name="tableWidget">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>10</y>
+      <width>321</width>
+      <height>771</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <family>Times New Roman</family>
+      <pointsize>16</pointsize>
+     </font>
+    </property>
+   </widget>
+  </widget>
+  <widget class="QStatusBar" name="statusbar"/>
+  <widget class="QMenuBar" name="menuBar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>1200</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="authorization">
+    <property name="title">
+     <string>Взаимодействие с аккаунтом</string>
+    </property>
+    <addaction name="sign_in"/>
+    <addaction name="sign_up"/>
+    <addaction name="action_exit"/>
+   </widget>
+   <widget class="QMenu" name="sort">
+    <property name="title">
+     <string>Сортировка</string>
+    </property>
+    <addaction name="sort_by_category"/>
+    <addaction name="sort_by_date"/>
+    <addaction name="sort_by_cost"/>
+   </widget>
+   <widget class="QMenu" name="filter">
+    <property name="title">
+     <string>Фильтр</string>
+    </property>
+    <addaction name="filter_by_categories"/>
+    <addaction name="filter_by_dates"/>
+    <addaction name="filter_by_costs"/>
+   </widget>
+   <widget class="QMenu" name="operations">
+    <property name="title">
+     <string>Операции с записями</string>
+    </property>
+    <addaction name="operation_add"/>
+    <addaction name="operation_edit"/>
+    <addaction name="operation_remove"/>
+   </widget>
+   <addaction name="authorization"/>
+   <addaction name="operations"/>
+   <addaction name="sort"/>
+   <addaction name="filter"/>
+  </widget>
+  <action name="sign_in">
+   <property name="text">
+    <string>Войти</string>
+   </property>
+  </action>
+  <action name="sign_up">
+   <property name="text">
+    <string>Зарегистрироваться</string>
+   </property>
+  </action>
+  <action name="sort_by_date">
+   <property name="text">
+    <string>По дате</string>
+   </property>
+  </action>
+  <action name="sort_by_category">
+   <property name="text">
+    <string>По категории</string>
+   </property>
+  </action>
+  <action name="sort_by_cost">
+   <property name="text">
+    <string>По цене</string>
+   </property>
+  </action>
+  <action name="filter_by_categories">
+   <property name="text">
+    <string>По категориям</string>
+   </property>
+  </action>
+  <action name="filter_by_dates">
+   <property name="text">
+    <string>По датам</string>
+   </property>
+  </action>
+  <action name="filter_by_costs">
+   <property name="text">
+    <string>По ценам</string>
+   </property>
+  </action>
+  <action name="operation_add">
+   <property name="text">
+    <string>Добавить</string>
+   </property>
+  </action>
+  <action name="operation_edit">
+   <property name="text">
+    <string>Изменить</string>
+   </property>
+  </action>
+  <action name="operation_remove">
+   <property name="text">
+    <string>Удалить</string>
+   </property>
+  </action>
+  <action name="action_exit">
+   <property name="text">
+    <string>Выйти из системы</string>
+   </property>
+  </action>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>
