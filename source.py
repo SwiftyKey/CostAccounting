@@ -1,6 +1,7 @@
 import sys
 
 from widgets import *
+from GraphWidget import GraphWidget
 from PyQt5 import uic
 from PyQt5.QtWidgets import QApplication, QMainWindow, QTableWidgetItem, QMessageBox
 
@@ -22,8 +23,7 @@ class Window(QMainWindow):
         self.tableWidget.setColumnCount(len(self.title))
         self.tableWidget.setHorizontalHeaderLabels(self.title)
 
-        # self.graph = GraphWidget(self.centralWidget())
-        # self.graph.setGeometry(440, 10, 751, 771)
+        self.graph = GraphWidget(self.user_id, self.graph_widget)
 
         self.showNotes()
 
