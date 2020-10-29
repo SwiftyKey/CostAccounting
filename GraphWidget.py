@@ -1,8 +1,11 @@
 import sys
-from PyQt5.QtWidgets import QWidget, QListWidgetItem, QLabel
+from PyQt5 import QtGui
+from PyQt5.QtWidgets import QWidget, QApplication, QPushButton, QListWidgetItem, QListWidget, QLabel, QLayout
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, QDate
 import matplotlib.pyplot as plt
+from matplotlib.pyplot import plot
+import random
 from PyQt5 import uic
 import sqlite3
 from datetime import date
@@ -31,21 +34,31 @@ def format_string(pct, number):
     return "{:d} рублей\n({:.1f}%)".format(absolute, pct)
 
 
-def do_data_to_format_bar_graph(data, labels, dates):
+def do_data_to_format_bar_and_plot_graph(data, labels, dates):
     format_list = []
-    if labels[-1] == 'Иное':
-        length = len(labels) - 1
-    else:
-        length = len(labels)
+    all_dates = []
+    for i in dates:
+        for j in i:
+            if j not in all_dates:
+                all_dates.append(j)
+    all_dates = sort_list_dates(all_dates)
+    if labels:
+        if labels[-1] == 'Иное':
+            labels = labels[:-1]
+            data = data[:-1]
+
     for i in range(length):
         union_data_and_dates = zip(data[i], dates[i])
         sorted_union_data_and_dates = sorted(union_data_and_dates,
                                              key=lambda tup: (str_date_to_datetime(tup[1]), tup[0]))
-        sorted_data = [i[0] for i in sorted_union_data_and_dates]
-        sorted_dates = [i[1] for i in sorted_union_data_and_dates]
+        sorted_dates = all_dates
+        sorted_data = [0] * len(all_dates)
+        for j in sorted_union_data_and_dates:
+            sorted_data[sorted_dates.index(j[1])] += j[0]
+
         format_list.append((sorted_data, sorted_dates, labels[i]))
 
-    return format_list
+    return format_list, all_dates
 
 
 def do_data_to_format_pie_graph(data):
@@ -55,28 +68,11 @@ def do_data_to_format_pie_graph(data):
     return format_data
 
 
-def do_data_to_format_plot(data, labels, dates):
-    if labels[-1] == 'Иное':
-        labels = labels[:-1]
-        data = data[:-1]
-    format_list = []
-
-    for i in range(len(labels)):
-        union_data_and_dates = zip(data[i], dates[i])
-        sorted_union_data_and_dates = sorted(union_data_and_dates,
-                                             key=lambda tup: (str_date_to_datetime(tup[1]), tup[0]))
-        sorted_data = [i[0] for i in sorted_union_data_and_dates]
-        sorted_dates = [i[1] for i in sorted_union_data_and_dates]
-        format_list.append((sorted_data, sorted_dates, labels[i]))
-
-    return format_list
-
-
 class GraphWidget(QWidget):
-    def __init__(self, user_id, parent):
-        self.userId = user_id  # для тестов
-        super(GraphWidget, self).__init__(parent)
-        uic.loadUi('ui/graph_window.ui', self)
+    def __init__(self):
+        self.userId = 1  # для тестов
+        super(GraphWidget, self).__init__()
+        uic.loadUi('cost.ui', self)
         self.figure = plt.figure()
         self.label_if_not_found_inf = QLabel(self)
         self.label_if_not_found_inf.setText("")
@@ -84,7 +80,7 @@ class GraphWidget(QWidget):
         self.pushButton.clicked.connect(self.plot)
         self.verticalLayout_3.addWidget(self.canvas)
         self.verticalLayout_3.addWidget(self.label_if_not_found_inf)
-        con = sqlite3.connect('Cost.db')
+        con = sqlite3.connect('Cost')
         cur = con.cursor()
         iterations = cur.execute('SELECT title FROM Category').fetchall()
         names_categories = [i[0] for i in iterations]  # получаем список всех категорий из БД
@@ -95,7 +91,6 @@ class GraphWidget(QWidget):
             item.setCheckState(Qt.Checked)
             self.listWidget.addItem(item)
         con.close()
-        self.colors = ["b", "g", "r", "c", "m", "y", "k"]
 
     def plot(self):  # функция для построения НЕОБХОДИМОЙ нам диаграммы
         self.first_date_year, self.first_date_month, self.first_date_day, \
@@ -116,10 +111,8 @@ class GraphWidget(QWidget):
         if labels_graph:  # если были найдены данные в таблице, то рисуем по ним график
             self.label_if_not_found_inf.setText("")
             ax = self.figure.add_subplot(111)
-            patches, x, t = plt.pie(data, autopct=lambda pct: format_string(pct, data),
-                                    textprops=dict(color="w"))
-            ax.legend(patches, labels_graph, title="Расходы", loc="lower right",
-                      bbox_to_anchor=(1, 0, 0.5, 1))
+            patches, x, t = plt.pie(data, autopct=lambda pct: format_string(pct, data), textprops=dict(color="w"))
+            ax.legend(patches, labels_graph, title="Расходы", loc="lower right", bbox_to_anchor=(1, 0, 0.5, 1))
             ax.set_title("Круговая диаграмма, построенная по вашим расходам:")
             self.canvas.draw()
         else:
@@ -131,27 +124,18 @@ class GraphWidget(QWidget):
     def build_bar_plot(self):
         self.figure.clear()
         data, labels_graph, dates = self.find_information_for_graph()
-        data_to_build_graph = do_data_to_format_bar_graph(data, labels_graph,
-                                                          list_dates_to_format(dates))
+        data_to_build_graph, all_dates = do_data_to_format_bar_and_plot_graph(data, labels_graph, list_dates_to_format(dates))
         if labels_graph:
             self.label_if_not_found_inf.setText("")
             ax = self.figure.add_subplot(111)
-            all_dates = []
-            for i in dates:
-                for j in i:
-                    if j not in all_dates:
-                        all_dates.append(j)
+
             values = [0] * len(all_dates)
             all_dates = sort_list_dates(all_dates)
             for i in range(len(data_to_build_graph)):
-                values_bottom = [values[all_dates.index(data_to_build_graph[i][1][j])]
-                                 for j in range(len(data_to_build_graph[i][1]))
-                                 if data_to_build_graph[i][1][j] in all_dates]
-                ax.bar(data_to_build_graph[i][1], data_to_build_graph[i][0], width=0.25,
-                       bottom=values_bottom, label=data_to_build_graph[i][2])
+                ax.bar(data_to_build_graph[i][1], data_to_build_graph[i][0],
+                       width=0.25, bottom=values, label=data_to_build_graph[i][2])
                 for val in range(len(data_to_build_graph[i][1])):
-                    values[all_dates.index(data_to_build_graph[i][1][val])] += \
-                        data_to_build_graph[i][0][val]
+                    values[all_dates.index(data_to_build_graph[i][1][val])] += data_to_build_graph[i][0][val]
 
             ax.set_title("Гистограмма, построенная по вышим расходам:")
             ax.set_ylabel("Затраты")
@@ -165,18 +149,12 @@ class GraphWidget(QWidget):
     def build_plot(self):
         self.figure.clear()
         data, labels_graph, data_to_build_graph = self.find_information_for_graph()
-        data_to_build_graph = do_data_to_format_plot(data, labels_graph,
-                                                     list_dates_to_format(data_to_build_graph))
+        data_to_build_graph, all_dates = do_data_to_format_bar_and_plot_graph(data, labels_graph, list_dates_to_format(data_to_build_graph))
         if labels_graph:
             self.label_if_not_found_inf.setText("")
             ax = self.figure.add_subplot(111)
             for i in range(len(data_to_build_graph)):
-                if len(data_to_build_graph[i][0]) == 1:
-                    ax.plot(data_to_build_graph[i][1], data_to_build_graph[i][0], "o",
-                            label=data_to_build_graph[i][2])
-                else:
-                    ax.plot(data_to_build_graph[i][1], data_to_build_graph[i][0],
-                            label=data_to_build_graph[i][2])
+                ax.plot(data_to_build_graph[i][1], data_to_build_graph[i][0], "o-", label=data_to_build_graph[i][2])
             ax.set_title("График, построенный по вашим расходам:")
             ax.set_ylabel("Затраты")
             ax.set_xlabel("Даты покупок")
@@ -187,12 +165,10 @@ class GraphWidget(QWidget):
                                                 "убедитесь, что данные введены верно и повторите запрос.")
 
     def find_information_for_graph(self):  # функция для нахождения суммы расходов по категориям
-        first_date = date(self.first_date_year, self.first_date_month, self.first_date_day).strftime(
-            "%Y-%m-%d")
-        second_date = date(self.last_date_year, self.first_date_month, self.last_date_day).strftime(
-            "%Y-%m-%d")
+        first_date = date(self.first_date_year, self.first_date_month, self.first_date_day).strftime("%Y-%m-%d")
+        second_date = date(self.last_date_year, self.first_date_month, self.last_date_day).strftime("%Y-%m-%d")
         # приводим даты к правильному формату для того, чтобы работать с SqLite
-        con = sqlite3.connect('Cost.db')
+        con = sqlite3.connect('Cost')
         cur = con.cursor()
         data = []
         labels = []
@@ -227,8 +203,7 @@ class GraphWidget(QWidget):
 
         return data, labels, dates
 
-    def get_users_data(
-            self):  # функция для получения необходимой для нас информации для построения диаграммы
+    def get_users_data(self):  # функция для получения необходимой для нас информации для построения диаграммы
         list_categories = []
         for i in range(self.listWidget.count()):
             list_item = self.listWidget.item(i)
@@ -244,3 +219,11 @@ class GraphWidget(QWidget):
 
 def except_hook(cls, exception, traceback):
     sys.__excepthook__(cls, exception, traceback)
+
+
+if __name__ == '__main__':
+    app = QApplication(sys.argv)
+    main = GraphWidget()
+    main.show()
+    sys.excepthook = except_hook
+    sys.exit(app.exec_())
