@@ -167,7 +167,7 @@ class Window(QMainWindow):
         sign_in_form.exec_()
 
         if self.user_id:
-            self.graph.userId = self.user_id
+            self.graph.set_id(self.user_id)
             self.graph.show()
 
         self.table = self.getCostData()
@@ -181,7 +181,7 @@ class Window(QMainWindow):
         sign_up_form.exec_()
 
         if self.user_id:
-            self.graph.userId = self.user_id
+            self.graph.set_id(self.user_id)
             self.graph.show()
 
         self.table.clear()
