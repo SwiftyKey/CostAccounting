@@ -166,8 +166,9 @@ class Window(QMainWindow):
         sign_in_form = SignInWindow(self)
         sign_in_form.exec_()
 
-        self.graph.userId = self.user_id
-        self.graph.show()
+        if self.user_id:
+            self.graph.userId = self.user_id
+            self.graph.show()
 
         self.table = self.getCostData()
         self.showNotes()
@@ -179,8 +180,9 @@ class Window(QMainWindow):
         sign_up_form = SignUpWindow(self)
         sign_up_form.exec_()
 
-        self.graph.userId = self.user_id
-        self.graph.show()
+        if self.user_id:
+            self.graph.userId = self.user_id
+            self.graph.show()
 
         self.table.clear()
         self.showNotes()
@@ -199,6 +201,7 @@ class Window(QMainWindow):
     def statusBarChange(self, message, condition):
         if condition:
             self.statusBar().showMessage(message)
+            self.statusbar.setStyleSheet("background-color:red")
             self.statusbar.setStyleSheet("background-color:red")
             return 1
         else:
