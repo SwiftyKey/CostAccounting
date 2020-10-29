@@ -44,7 +44,7 @@ def do_data_to_format_bar_and_plot_graph(data, labels, dates):
             labels = labels[:-1]
             data = data[:-1]
 
-    for i in range(labels):
+    for i in range(len(labels)):
         union_data_and_dates = zip(data[i], dates[i])
         sorted_union_data_and_dates = sorted(union_data_and_dates,
                                              key=lambda tup: (str_date_to_datetime(tup[1]), tup[0]))
