@@ -44,7 +44,11 @@
       </widget>
      </item>
      <item>
-      <widget class="QLineEdit" name="input_password"/>
+      <widget class="QLineEdit" name="input_password">
+       <property name="echoMode">
+        <enum>QLineEdit::Normal</enum>
+       </property>
+      </widget>
      </item>
     </layout>
    </item>

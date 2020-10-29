@@ -28,7 +28,7 @@ def list_dates_to_format(dates):
 
 def format_string(pct, number):
     absolute = int(pct / 100. * np.sum(number))
-    return "{:d} рублей\n({:.1f}%)".format(absolute, pct)
+    return "{:d} руб.\n({:.1f}%)".format(absolute, pct)
 
 
 def do_data_to_format_bar_and_plot_graph(data, labels, dates):
