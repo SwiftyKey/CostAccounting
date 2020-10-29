@@ -134,6 +134,64 @@ VALUES({self.user_id}, {self.category}, "{self.date}", {self.cost})''')
         self.close()
 
 
+class EditWindow(QDialog):
+    def __init__(self, user_id, selected_items, parent=None):
+        super(EditWindow, self).__init__(parent)
+
+        self.con = sqlite3.connect("Cost.db")
+
+        self.user_id = user_id
+        self.selected_items = selected_items
+        self.category = ""
+        self.date = ""
+        self.cost = ""
+
+        uic.loadUi("ui/edit_window.ui", self)
+        self.setWindowTitle("Новая запись")
+
+        cur = self.con.cursor()
+        categories = map(lambda item: item[0], cur.execute("SELECT Title FROM Category").fetchall())
+        self.select_category.addItems(categories)
+
+        self.select_cost.setSingleStep(0.01)
+        self.select_cost.setRange(0.01, 10e9)
+
+        self.button_edit.clicked.connect(self.edit_note)
+        self.button_create_category.clicked.connect(self.new_category)
+        self.button_exit.clicked.connect(self.exit)
+
+    def new_category(self):
+        title = QInputDialog.getText(self, "Новая категория",
+                                     "Введите название новой категории")
+        if title[0] and title[1]:
+            cur = self.con.cursor()
+            cur.execute(f"INSERT INTO Category(Title) VALUES('{title[0]}')")
+            cur.close()
+            self.con.commit()
+
+            self.select_category.insertItem(0, title[0])
+            self.select_category.setCurrentIndex(0)
+
+    def edit_note(self):
+        cur = self.con.cursor()
+
+        self.category = cur.execute(f'''SELECT CategoryId FROM Category 
+    WHERE Title = "{self.select_category.currentText()}"''').fetchone()[0]
+        self.date = self.select_date.selectedDate().toString("yyyy-MM-dd")
+        self.cost = self.select_cost.value()
+
+        cur.execute(f'''INSERT INTO Cost(UserId, CategoryId, Date, SumCost) 
+    VALUES({self.user_id}, {self.category}, "{self.date}", {self.cost})''')
+        cur.close()
+        self.con.commit()
+
+        self.exit()
+
+    def exit(self):
+        self.con.close()
+        self.close()
+
+
 class SignInWindow(QDialog):
     def __init__(self, parent=None):
         super(SignInWindow, self).__init__(parent)

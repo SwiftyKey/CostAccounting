@@ -1,7 +1,8 @@
+import sqlite3
 import sys
 
-from widgets import *
-from GraphWidget import GraphWidget
+from widgets import NoteWindow, EditWindow, SignInWindow, SignUpWindow
+#from GraphWidget import GraphWidget
 from PyQt5 import uic
 from PyQt5.QtWidgets import QApplication, QMainWindow, QTableWidgetItem, QMessageBox
 
@@ -23,7 +24,7 @@ class Window(QMainWindow):
         self.tableWidget.setColumnCount(len(self.title))
         self.tableWidget.setHorizontalHeaderLabels(self.title)
 
-        self.graph = GraphWidget(self.user_id, self.graph_widget)
+        #self.graph = GraphWidget(self.user_id, self.graph_widget)
 
         self.showNotes()
 
@@ -66,7 +67,8 @@ class Window(QMainWindow):
                     self.tableWidget.setItem(i, j, QTableWidgetItem(str(value)))
 
     def add(self):
-        self.statusBarChange("Войдите в аккаунт, чтобы добавить запись", self.user_id is None)
+        if self.statusBarChange("Войдите в аккаунт, чтобы добавить запись", self.user_id is None):
+            return
 
         new_note_form = NoteWindow(self.user_id, self)
         new_note_form.exec_()
@@ -75,8 +77,10 @@ class Window(QMainWindow):
         self.showNotes()
 
     def remove(self):
-        self.statusBarChange("Войдите в аккаунт, чтобы удалить запись", self.user_id is None)
-        self.statusBarChange("Должна быть хотя бы одна запись", not len(self.table))
+        if self.statusBarChange("Войдите в аккаунт, чтобы удалить запись", self.user_id is None):
+            return
+        if self.statusBarChange("Должна быть хотя бы одна запись", not len(self.table)):
+            return
 
         rows = self.tableWidget.selectedItems()
 
@@ -107,9 +111,16 @@ class Window(QMainWindow):
                 self.showNotes()
 
     def edit(self):
-        self.statusBarChange("Войдите в аккаунт, чтобы изменить запись", self.user_id is None)
-        self.statusBarChange("Должна быть хотя бы одна запись", not len(self.table))
-        pass
+        if self.statusBarChange("Войдите в аккаунт, чтобы изменить запись", self.user_id is None):
+            return
+        if self.statusBarChange("Должна быть хотя бы одна запись", not len(self.table)):
+            return
+
+        edit_form = EditWindow(self.user_id, self.tableWidget.selectedItems(), self)
+        edit_form.exec_()
+
+        self.table = self.getCostData()
+        self.showNotes()
 
     def filterByCategories(self):
         pass
@@ -121,28 +132,35 @@ class Window(QMainWindow):
         pass
 
     def sortByCategories(self):
-        self.statusBarChange("Войдите в аккаунт, чтобы отсортировать записи", self.user_id is None)
-        self.statusBarChange("Записей должно быть больше одной", len(self.table) <= 1)
+        if self.statusBarChange("Войдите в аккаунт, для сортировки записей", self.user_id is None):
+            return
+        if self.statusBarChange("Записей должно быть больше одной", len(self.table) <= 1):
+            return
 
         self.table.sort(key=lambda note: note[0])
         self.showNotes()
 
     def sortByDates(self):
-        self.statusBarChange("Войдите в аккаунт, чтобы отсортировать записи", self.user_id is None)
-        self.statusBarChange("Записей должно быть больше одной", len(self.table) <= 1)
+        if self.statusBarChange("Войдите в аккаунт, для сортировки записей", self.user_id is None):
+            return
+        if self.statusBarChange("Записей должно быть больше одной", len(self.table) <= 1):
+            return
 
         self.table.sort(key=lambda note: note[1])
         self.showNotes()
 
     def sortByCosts(self):
-        self.statusBarChange("Войдите в аккаунт, чтобы отсортировать записи", self.user_id is None)
-        self.statusBarChange("Записей должно быть больше одной", len(self.table) <= 1)
+        if self.statusBarChange("Войдите в аккаунт, для сортировки записей", self.user_id is None):
+            return
+        if self.statusBarChange("Записей должно быть больше одной", len(self.table) <= 1):
+            return
 
         self.table.sort(key=lambda note: note[2])
         self.showNotes()
 
     def signIn(self):
-        self.statusBarChange("Выйдите из аккаунта, чтобы войти в другой аккаунт", self.user_id)
+        if self.statusBarChange("Выйдите из аккаунта, чтобы войти в другой аккаунт", self.user_id):
+            return
 
         sign_in_form = SignInWindow(self)
         sign_in_form.exec_()
@@ -151,7 +169,8 @@ class Window(QMainWindow):
         self.showNotes()
 
     def signUp(self):
-        self.statusBarChange("Выйдите из аккаунта, чтобы зарегистрироваться", self.user_id)
+        if self.statusBarChange("Выйдите из аккаунта, чтобы зарегистрироваться", self.user_id):
+            return
 
         sign_up_form = SignUpWindow(self)
         sign_up_form.exec_()
@@ -160,7 +179,8 @@ class Window(QMainWindow):
         self.showNotes()
 
     def exit(self):
-        self.statusBarChange("Нельзя выйти, так как вы не вошли в аккаунт", self.user_id is None)
+        if self.statusBarChange("Нельзя выйти, так как вы не вошли в аккаунт", self.user_id is None):
+            return
 
         self.table.clear()
         self.showNotes()
@@ -171,7 +191,7 @@ class Window(QMainWindow):
         if condition:
             self.statusBar().showMessage(message)
             self.statusbar.setStyleSheet("background-color:red")
-            return
+            return 1
         else:
             self.statusBar().setStyleSheet("background-color:white")
 
