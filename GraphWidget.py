@@ -172,7 +172,7 @@ class GraphWidget(QWidget):
     def find_information_for_graph(self):  # функция для нахождения суммы расходов по категориям
         first_date = date(self.first_date_year, self.first_date_month, self.first_date_day).strftime(
             "%Y-%m-%d")
-        second_date = date(self.last_date_year, self.first_date_month, self.last_date_day).strftime(
+        second_date = date(self.last_date_year, self.last_date_month, self.last_date_day).strftime(
             "%Y-%m-%d")
         # приводим даты к правильному формату для того, чтобы работать с SqLite
         con = sqlite3.connect('Cost.db')

@@ -20,11 +20,12 @@ class Window(QMainWindow):
 
         uic.loadUi("ui/main_window.ui", self)
 
+        self.graph = GraphWidget(self.user_id, self.graph_widget)
+        self.graph.hide()
+
         self.setWindowTitle("Учет расходов")
         self.tableWidget.setColumnCount(len(self.title))
         self.tableWidget.setHorizontalHeaderLabels(self.title)
-
-        self.graph = GraphWidget(self.user_id, self.graph_widget)
 
         self.showNotes()
 
@@ -113,7 +114,7 @@ class Window(QMainWindow):
     def edit(self):
         if self.statusBarChange("Войдите в аккаунт, чтобы изменить запись", self.user_id is None):
             return
-        if self.statusBarChange("Должна быть хотя бы одна запись", not len(self.table)):
+        if self.statusBarChange("Должна быть выбрана одна запись", len(self.table) != 1):
             return
 
         edit_form = EditWindow(self.user_id, self.tableWidget.selectedItems(), self)
@@ -165,6 +166,9 @@ class Window(QMainWindow):
         sign_in_form = SignInWindow(self)
         sign_in_form.exec_()
 
+        self.graph.userId = self.user_id
+        self.graph.show()
+
         self.table = self.getCostData()
         self.showNotes()
 
@@ -175,12 +179,17 @@ class Window(QMainWindow):
         sign_up_form = SignUpWindow(self)
         sign_up_form.exec_()
 
+        self.graph.userId = self.user_id
+        self.graph.show()
+
         self.table.clear()
         self.showNotes()
 
     def exit(self):
         if self.statusBarChange("Нельзя выйти, так как вы не вошли в аккаунт", self.user_id is None):
             return
+
+        self.graph.hide()
 
         self.table.clear()
         self.showNotes()
