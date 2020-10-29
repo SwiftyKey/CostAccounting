@@ -42,10 +42,10 @@ def do_data_to_format_bar_and_plot_graph(data, labels, dates):
             if j not in all_dates:
                 all_dates.append(j)
     all_dates = sort_list_dates(all_dates)
-    if labels[-1] == 'Иное':
-        length = len(labels) - 1
-    else:
-        length = len(labels)
+    if labels:
+        if labels[-1] == 'Иное':
+            labels = labels[:-1]
+            data = data[:-1]
 
     for i in range(length):
         union_data_and_dates = zip(data[i], dates[i])
