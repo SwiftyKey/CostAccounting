@@ -34,33 +34,31 @@ def format_string(pct, number):
     return "{:d} рублей\n({:.1f}%)".format(absolute, pct)
 
 
-def do_data_to_format_bar_graph(data, labels, dates):
+def do_data_to_format_bar_and_plot_graph(data, labels, dates):
     format_list = []
+    all_dates = []
+    for i in dates:
+        for j in i:
+            if j not in all_dates:
+                all_dates.append(j)
+    all_dates = sort_list_dates(all_dates)
     if labels[-1] == 'Иное':
-        data = data[:-1]
-        labels = labels[:-1]
-    dates_format = []
-    data_format = []
-    labels_format = []
-    for i in range(len(dates)):
-        for j in range(len(dates[i])):
-            dates_format.append(dates[i][j])
-            data_format.append(data[i][j])
-            labels_format.append(labels[i])
+        length = len(labels) - 1
+    else:
+        length = len(labels)
 
-    for i in range(len(data_format)):
-        if dates_format[i] not in [i[2] for i in format_list]:
-            format_list.append(([data_format[i]], [labels_format[i]], dates_format[i]))
-        else:
-            if labels_format[i] not in format_list[[j[2] for j in format_list].index(dates_format[i])][1]:
-                format_list[[j[2] for j in format_list].index(dates_format[i])][0].append(data_format[i])
-                format_list[[j[2] for j in format_list].index(dates_format[i])][1].append(labels_format[i])
-            else:
-                index_tuple = [j[2] for j in format_list].index(dates_format[i])
-                y = format_list[index_tuple][1].index(labels_format[i])
-                format_list[index_tuple][0][format_list[index_tuple][1].index(labels_format[i])] += data_format[i]
+    for i in range(length):
+        union_data_and_dates = zip(data[i], dates[i])
+        sorted_union_data_and_dates = sorted(union_data_and_dates,
+                                             key=lambda tup: (str_date_to_datetime(tup[1]), tup[0]))
+        sorted_dates = all_dates
+        sorted_data = [0] * len(all_dates)
+        for j in sorted_union_data_and_dates:
+            sorted_data[sorted_dates.index(j[1])] += j[0]
 
-    return sorted(format_list, key=lambda tup: (tup[2], tup[0], tup[1]))
+        format_list.append((sorted_data, sorted_dates, labels[i]))
+
+    return format_list, all_dates
 
 
 def do_data_to_format_pie_graph(data):
@@ -68,22 +66,6 @@ def do_data_to_format_pie_graph(data):
     for i in range(len(data)):
         format_data.append(sum(data[i]))
     return format_data
-
-
-def do_data_to_format_plot(data, labels, dates):
-    if labels[-1] == 'Иное':
-        labels = labels[:-1]
-        data = data[:-1]
-    format_list = []
-
-    for i in range(len(labels)):
-        union_data_and_dates = zip(data[i], dates[i])
-        sorted_union_data_and_dates = sorted(union_data_and_dates, key=lambda tup: (str_date_to_datetime(tup[1]), tup[0]))
-        sorted_data = [i[0] for i in sorted_union_data_and_dates]
-        sorted_dates = [i[1] for i in sorted_union_data_and_dates]
-        format_list.append((sorted_data, sorted_dates, labels[i]))
-
-    return format_list
 
 
 class GraphWidget(QWidget):
@@ -109,7 +91,6 @@ class GraphWidget(QWidget):
             item.setCheckState(Qt.Checked)
             self.listWidget.addItem(item)
         con.close()
-        self.colors = ["b", "g", "r", "c", "m", "y", "k"]
 
     def plot(self):  # функция для построения НЕОБХОДИМОЙ нам диаграммы
         self.first_date_year, self.first_date_month, self.first_date_day, \
@@ -143,21 +124,23 @@ class GraphWidget(QWidget):
     def build_bar_plot(self):
         self.figure.clear()
         data, labels_graph, dates = self.find_information_for_graph()
-        data_to_build_graph = do_data_to_format_bar_graph(data, labels_graph, list_dates_to_format(dates))
+        data_to_build_graph, all_dates = do_data_to_format_bar_and_plot_graph(data, labels_graph, list_dates_to_format(dates))
         if labels_graph:
             self.label_if_not_found_inf.setText("")
             ax = self.figure.add_subplot(111)
+
+            values = [0] * len(all_dates)
+            all_dates = sort_list_dates(all_dates)
             for i in range(len(data_to_build_graph)):
-                value_bottom = 0
-                for j in range(len(data_to_build_graph[i][1])):
-                    ax.bar(data_to_build_graph[i][2], data_to_build_graph[i][0][j],
-                           bottom=value_bottom, width=0.25)
-                    value_bottom += data_to_build_graph[i][0][j]
+                ax.bar(data_to_build_graph[i][1], data_to_build_graph[i][0],
+                       width=0.25, bottom=values, label=data_to_build_graph[i][2])
+                for val in range(len(data_to_build_graph[i][1])):
+                    values[all_dates.index(data_to_build_graph[i][1][val])] += data_to_build_graph[i][0][val]
 
             ax.set_title("Гистограмма, построенная по вышим расходам:")
             ax.set_ylabel("Затраты")
             ax.set_xlabel("Даты покупок")
-            ax.legend(labels_graph)
+            ax.legend()
             self.canvas.draw()
         else:
             self.label_if_not_found_inf.setText("Не было найдено информации, "
@@ -166,15 +149,12 @@ class GraphWidget(QWidget):
     def build_plot(self):
         self.figure.clear()
         data, labels_graph, data_to_build_graph = self.find_information_for_graph()
-        data_to_build_graph = do_data_to_format_plot(data, labels_graph, list_dates_to_format(data_to_build_graph))
+        data_to_build_graph, all_dates = do_data_to_format_bar_and_plot_graph(data, labels_graph, list_dates_to_format(data_to_build_graph))
         if labels_graph:
             self.label_if_not_found_inf.setText("")
             ax = self.figure.add_subplot(111)
             for i in range(len(data_to_build_graph)):
-                if len(data_to_build_graph[i][0]) == 1:
-                    ax.plot(data_to_build_graph[i][1], data_to_build_graph[i][0], "o", label=data_to_build_graph[i][2])
-                else:
-                    ax.plot(data_to_build_graph[i][1], data_to_build_graph[i][0], label=data_to_build_graph[i][2])
+                ax.plot(data_to_build_graph[i][1], data_to_build_graph[i][0], "o-", label=data_to_build_graph[i][2])
             ax.set_title("График, построенный по вашим расходам:")
             ax.set_ylabel("Затраты")
             ax.set_xlabel("Даты покупок")

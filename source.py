@@ -1,12 +1,9 @@
-<<<<<<< HEAD
-print("Hello")
-print('GoodBy')
-=======
 import sys
 
 from widgets import *
+from GraphWidget import GraphWidget
 from PyQt5 import uic
-from PyQt5.QtWidgets import QApplication, QMainWindow, QTableWidgetItem
+from PyQt5.QtWidgets import QApplication, QMainWindow, QTableWidgetItem, QMessageBox
 
 
 class Window(QMainWindow):
@@ -26,8 +23,7 @@ class Window(QMainWindow):
         self.tableWidget.setColumnCount(len(self.title))
         self.tableWidget.setHorizontalHeaderLabels(self.title)
 
-        # self.graph = GraphWidget(self.centralWidget())
-        # self.graph.setGeometry(440, 10, 751, 771)
+        self.graph = GraphWidget(self.user_id, self.graph_widget)
 
         self.showNotes()
 
@@ -46,6 +42,9 @@ class Window(QMainWindow):
         self.sign_in.triggered.connect(self.signIn)
         self.sign_up.triggered.connect(self.signUp)
         self.action_exit.triggered.connect(self.exit)
+
+    def __del__(self):
+        self.con.close()
 
     def getCostData(self):
         if self.user_id:
@@ -67,6 +66,8 @@ class Window(QMainWindow):
                     self.tableWidget.setItem(i, j, QTableWidgetItem(str(value)))
 
     def add(self):
+        self.statusBarChange("Войдите в аккаунт, чтобы добавить запись", self.user_id is None)
+
         new_note_form = NoteWindow(self.user_id, self)
         new_note_form.exec_()
 
@@ -74,9 +75,40 @@ class Window(QMainWindow):
         self.showNotes()
 
     def remove(self):
-        pass
+        self.statusBarChange("Войдите в аккаунт, чтобы удалить запись", self.user_id is None)
+        self.statusBarChange("Должна быть хотя бы одна запись", not len(self.table))
+
+        rows = self.tableWidget.selectedItems()
+
+        if rows:
+            valid = QMessageBox.question(
+                self, '', "Действительно удалить записи с номерами " +
+                          ", ".join(str(i.row() + 1) for i in rows) + '?',
+                QMessageBox.Yes, QMessageBox.No)
+
+            if valid == QMessageBox.Yes:
+                cur = self.con.cursor()
+
+                for row in rows:
+                    category, date, cost = self.table[row.row()]
+                    category = cur.execute(f'''SELECT CategoryId FROM Category 
+    WHERE Title = "{category}"''').fetchone()[0]
+                    cur.execute(f'''DELETE FROM Cost 
+    WHERE CategoryId={category} AND Date="{date}" AND SumCost={cost}''')
+
+                self.statusBar().showMessage("Записи с номерами "
+                                             + ", ".join(str(row.row() + 1) for row in rows)
+                                             + " успешно удалены")
+
+                cur.close()
+                self.con.commit()
+
+                self.table = self.getCostData()
+                self.showNotes()
 
     def edit(self):
+        self.statusBarChange("Войдите в аккаунт, чтобы изменить запись", self.user_id is None)
+        self.statusBarChange("Должна быть хотя бы одна запись", not len(self.table))
         pass
 
     def filterByCategories(self):
@@ -89,13 +121,25 @@ class Window(QMainWindow):
         pass
 
     def sortByCategories(self):
-        pass
+        self.statusBarChange("Войдите в аккаунт, чтобы отсортировать записи", self.user_id is None)
+        self.statusBarChange("Записей должно быть больше одной", len(self.table) <= 1)
+
+        self.table.sort(key=lambda note: note[0])
+        self.showNotes()
 
     def sortByDates(self):
-        pass
+        self.statusBarChange("Войдите в аккаунт, чтобы отсортировать записи", self.user_id is None)
+        self.statusBarChange("Записей должно быть больше одной", len(self.table) <= 1)
+
+        self.table.sort(key=lambda note: note[1])
+        self.showNotes()
 
     def sortByCosts(self):
-        pass
+        self.statusBarChange("Войдите в аккаунт, чтобы отсортировать записи", self.user_id is None)
+        self.statusBarChange("Записей должно быть больше одной", len(self.table) <= 1)
+
+        self.table.sort(key=lambda note: note[2])
+        self.showNotes()
 
     def signIn(self):
         self.statusBarChange("Выйдите из аккаунта, чтобы войти в другой аккаунт", self.user_id)
@@ -137,4 +181,3 @@ if __name__ == '__main__':
     main = Window()
     main.show()
     sys.exit(app.exec_())
->>>>>>> 54f57eae03652d273928d8a8e91aaf1fe5c947b2
