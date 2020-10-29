@@ -2,7 +2,7 @@ import sqlite3
 import sys
 
 from widgets import NoteWindow, EditWindow, SignInWindow, SignUpWindow
-#from GraphWidget import GraphWidget
+from GraphWidget import GraphWidget
 from PyQt5 import uic
 from PyQt5.QtWidgets import QApplication, QMainWindow, QTableWidgetItem, QMessageBox
 
@@ -24,7 +24,7 @@ class Window(QMainWindow):
         self.tableWidget.setColumnCount(len(self.title))
         self.tableWidget.setHorizontalHeaderLabels(self.title)
 
-        #self.graph = GraphWidget(self.user_id, self.graph_widget)
+        self.graph = GraphWidget(self.user_id, self.graph_widget)
 
         self.showNotes()
 
