@@ -224,6 +224,12 @@ class GraphWidget(QWidget):
                last_date.year(), last_date.month(), last_date.day(), \
                diagram, list_categories  # раскладываем даты на три составляющих для дальнейших операций с ними
 
+    def get_id(self):
+        return self.userId
+
+    def set_id(self, id):
+        self.userId = id
+
 
 def except_hook(cls, exception, traceback):
     sys.__excepthook__(cls, exception, traceback)
