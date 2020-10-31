@@ -33,10 +33,6 @@ class Window(QMainWindow):
         self.operation_edit.triggered.connect(self.edit)
         self.operation_remove.triggered.connect(self.remove)
 
-        self.sort_by_category.triggered.connect(self.sortByCategories)
-        self.sort_by_date.triggered.connect(self.sortByDates)
-        self.sort_by_cost.triggered.connect(self.sortByCosts)
-
         self.filter_by_categories.triggered.connect(self.filterByCategories)
         self.filter_by_dates.triggered.connect(self.filterByDates)
         self.filter_by_costs.triggered.connect(self.filterByCosts)
@@ -114,10 +110,15 @@ class Window(QMainWindow):
     def edit(self):
         if self.statusBarChange("Войдите в аккаунт, чтобы изменить запись", self.user_id is None):
             return
-        if self.statusBarChange("Должна быть выбрана одна запись", len(self.table) != 1):
+
+        selected_item = self.tableWidget.selectedItems()
+
+        if self.statusBarChange("Должна быть выбрана одна запись", len(selected_item) != 1):
             return
 
-        edit_form = EditWindow(self.user_id, self.tableWidget.selectedItems(), self)
+        category, date, cost = self.table[selected_item[0].row()]
+
+        edit_form = EditWindow(self.user_id, category, date, cost, self)
         edit_form.exec_()
 
         self.table = self.getCostData()
@@ -140,6 +141,9 @@ class Window(QMainWindow):
 
         self.table.sort(key=lambda note: note[0])
         self.showNotes()
+
+    def sort(self):
+        pass
 
     def sortByDates(self):
         if self.statusBarChange("Войдите в аккаунт, для сортировки записей", self.user_id is None):

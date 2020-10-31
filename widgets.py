@@ -1,4 +1,5 @@
 from PyQt5 import uic, QtGui
+from PyQt5.QtCore import QDate
 from PyQt5.QtWidgets import QDialog, QInputDialog
 
 import sqlite3
@@ -135,16 +136,15 @@ VALUES({self.user_id}, {self.category}, "{self.date}", {self.cost})''')
 
 
 class EditWindow(QDialog):
-    def __init__(self, user_id, selected_items, parent=None):
+    def __init__(self, user_id, category, date, cost, parent=None):
         super(EditWindow, self).__init__(parent)
 
         self.con = sqlite3.connect("Cost.db")
 
         self.user_id = user_id
-        self.selected_items = selected_items
-        self.category = ""
-        self.date = ""
-        self.cost = ""
+        self.category = category
+        self.date = date
+        self.cost = cost
 
         uic.loadUi("ui/edit_window.ui", self)
         self.setWindowTitle("Новая запись")
@@ -152,9 +152,14 @@ class EditWindow(QDialog):
         cur = self.con.cursor()
         categories = map(lambda item: item[0], cur.execute("SELECT Title FROM Category").fetchall())
         self.select_category.addItems(categories)
+        self.select_category.setCurrentText(self.category)
 
         self.select_cost.setSingleStep(0.01)
         self.select_cost.setRange(0.01, 10e9)
+        self.select_cost.setValue(float(self.cost))
+
+        year, month, day = list(map(int, self.date.split('-')))
+        self.select_date.setSelectedDate(QDate(year, month, day))
 
         self.button_edit.clicked.connect(self.edit_note)
         self.button_create_category.clicked.connect(self.new_category)
@@ -176,12 +181,15 @@ class EditWindow(QDialog):
         cur = self.con.cursor()
 
         self.category = cur.execute(f'''SELECT CategoryId FROM Category 
-    WHERE Title = "{self.select_category.currentText()}"''').fetchone()[0]
-        self.date = self.select_date.selectedDate().toString("yyyy-MM-dd")
-        self.cost = self.select_cost.value()
+WHERE Title = "{self.category}"''').fetchone()[0]
+        category = cur.execute(f'''SELECT CategoryId FROM Category 
+WHERE Title = "{self.select_category.currentText()}"''').fetchone()[0]
+        date = self.select_date.selectedDate().toString("yyyy-MM-dd")
+        cost = self.select_cost.value()
 
-        cur.execute(f'''INSERT INTO Cost(UserId, CategoryId, Date, SumCost) 
-    VALUES({self.user_id}, {self.category}, "{self.date}", {self.cost})''')
+        if self.cost != cost or self.category != category or self.date != date:
+            cur.execute(f'''INSERT INTO Cost(UserId, CategoryId, Date, SumCost)
+VALUES({self.user_id}, {category}, "{date}", {cost})''')
         cur.close()
         self.con.commit()
 
