@@ -33,6 +33,10 @@ class Window(QMainWindow):
         self.operation_edit.triggered.connect(self.edit)
         self.operation_remove.triggered.connect(self.remove)
 
+        self.sort_by_category.triggered.connect(self.sortByCategories)
+        self.sort_by_date.triggered.connect(self.sortByDates)
+        self.sort_by_cost.triggered.connect(self.sortByCosts)
+
         self.filter_by_categories.triggered.connect(self.filterByCategories)
         self.filter_by_dates.triggered.connect(self.filterByDates)
         self.filter_by_costs.triggered.connect(self.filterByCosts)
