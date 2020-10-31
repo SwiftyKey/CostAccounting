@@ -31,7 +31,8 @@ def format_string(pct, number):  # функция форматирования �
     return "{:d} руб.\n({:.1f}%)".format(absolute, pct)
 
 
-def do_data_to_format_bar_and_plot_graph(data, labels, dates):  # функция приведения полученных данных к удобному виду
+def do_data_to_format_bar_and_plot_graph(data, labels,
+                                         dates):  # функция приведения полученных данных к удобному виду
     # для построения столбчатой диаграммы и графика
     format_list = []
     all_dates = []
@@ -47,12 +48,15 @@ def do_data_to_format_bar_and_plot_graph(data, labels, dates):  # функция
 
     for i in range(len(labels)):
         union_data_and_dates = zip(data[i], dates[i])
-        sorted_union_data_and_dates = sorted(union_data_and_dates,  # сортировка для того, чтобы покупки соответствовали
-                                             key=lambda tup: (str_date_to_datetime(tup[1]), tup[0]))  # датам
+        sorted_union_data_and_dates = sorted(union_data_and_dates,
+                                             # сортировка для того, чтобы покупки соответствовали
+                                             key=lambda tup: (
+                                             str_date_to_datetime(tup[1]), tup[0]))  # датам
         sorted_dates = all_dates
         sorted_data = [0] * len(all_dates)
         for j in sorted_union_data_and_dates:  # цикл для того, чтобы не было случая, когда покупок больше чем дат
-            sorted_data[sorted_dates.index(j[1])] += j[0]  # иначе построение графика окажется невозможным
+            sorted_data[sorted_dates.index(j[1])] += j[
+                0]  # иначе построение графика окажется невозможным
 
         format_list.append((sorted_data, sorted_dates, labels[i]))
 
@@ -125,18 +129,21 @@ class GraphWidget(QWidget):
         data, labels_graph, dates = self.find_information_for_graph()
         data_to_build_graph, all_dates = do_data_to_format_bar_and_plot_graph(data,
                                                                               labels_graph,
-                                                                              list_dates_to_format(dates))
+                                                                              list_dates_to_format(
+                                                                                  dates))
         if labels_graph:
             self.label_if_not_found_inf.setText("")
             ax = self.figure.add_subplot(111)
 
-            values = [0] * len(all_dates)  # значения для аргумента bottom, чтобы столбцы не наслаивались друг на друга
+            values = [0] * len(
+                all_dates)  # значения для аргумента bottom, чтобы столбцы не наслаивались друг на друга
 
             for i in range(len(data_to_build_graph)):
                 ax.bar(data_to_build_graph[i][1], data_to_build_graph[i][0],
                        width=0.25, bottom=values, label=data_to_build_graph[i][2])
 
-                for val in range(len(data_to_build_graph[i][1])):  # обновляются значения values для аргумента bottom
+                for val in range(len(data_to_build_graph[i][
+                                         1])):  # обновляются значения values для аргумента bottom
                     values[all_dates.index(data_to_build_graph[i][1][val])] += \
                         data_to_build_graph[i][0][val]
 
@@ -158,7 +165,8 @@ class GraphWidget(QWidget):
         if labels_graph:
             self.label_if_not_found_inf.setText("")
             ax = self.figure.add_subplot(111)
-            for i in range(len(data_to_build_graph)):  # строятся графики расходов по категориям по очереди
+            for i in range(
+                    len(data_to_build_graph)):  # строятся графики расходов по категориям по очереди
                 ax.plot(data_to_build_graph[i][1], data_to_build_graph[i][0], "o-",
                         label=data_to_build_graph[i][2])
             ax.set_title("График ваших расходов:")
@@ -187,7 +195,7 @@ class GraphWidget(QWidget):
                                      and date(Date) <= date(?)) and UserId = ?""",
                              (first_date,
                               second_date,
-                              self.userId)).fetchall()  # получаем все данные, удовлетворяющие временному отрезку, указанному пользователем
+                              self.get_id())).fetchall()  # получаем все данные, удовлетворяющие временному отрезку, указанному пользователем
         for i in range(len(result)):
             category = cur.execute("""SELECT Title FROM Category WHERE CategoryId = ?""",
                                    (result[i][2],)).fetchone()[0]
@@ -197,7 +205,8 @@ class GraphWidget(QWidget):
                     data.append([result[i][4]])
                     dates.append([result[i][3]])
                 else:
-                    something += result[i][4]  # заполняется значение иных категорий, не выбранных пользователем
+                    something += result[i][
+                        4]  # заполняется значение иных категорий, не выбранных пользователем
             else:
                 data[labels.index(category)].append(result[i][4])
                 dates[labels.index(category)].append(result[i][3])
