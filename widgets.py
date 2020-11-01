@@ -3,6 +3,8 @@ from PyQt5.QtCore import QDate
 from PyQt5.QtWidgets import QDialog, QInputDialog
 
 import sqlite3
+import uuid
+import hashlib
 
 LENGTH = 9
 SEQUENCES = ("qwertyuiop", "asdfghjkl", "zxcvbnm", "йцукенгшщзхъ", "фывапролджэё", "ячсмитьбю")
@@ -12,6 +14,16 @@ DIGITS = "0123456789"
 def change_border(widget, color):
     widget.setFont(QtGui.QFont('Times', 14))
     widget.setStyleSheet(f'''border-style: solid; border-width: 1px; border-color: {color};''')
+
+
+def hash_password(password):
+    salt = uuid.uuid4().hex
+    return hashlib.sha256(salt.encode() + password.encode()).hexdigest() + ':' + salt
+
+
+def check_password(hashed_password, user_password):
+    password, salt = hashed_password.split(':')
+    return password == hashlib.sha256(salt.encode() + user_password.encode()).hexdigest()
 
 
 class LoginError(Exception):
@@ -225,9 +237,9 @@ class SignInWindow(QDialog):
             result = cur.execute(f'''SELECT UserId, Password FROM User 
 WHERE Login = "{login}"''').fetchone()
             if result:
-                if result[1] == password:
+                if check_password(result[1], password):
                     self.parent().user_id = result[0]
-                    change_border(self.input_login, "green")
+                    change_border(self.input_login, "black")
                     change_border(self.input_password, "black")
                 else:
                     raise PasswordError("Неверный пароль")
@@ -276,7 +288,7 @@ class SignUpWindow(QDialog):
 
             if password.check_password():
                 cur.execute(f'''INSERT INTO USER(Login, Password) 
-VALUES("{login}", "{password.password}")''')
+VALUES("{login}", "{hash_password(password.password)}")''')
                 change_border(self.input_password, "black")
                 change_border(self.input_login, "black")
         except LoginError as error:
