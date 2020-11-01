@@ -65,6 +65,8 @@ class Window(QMainWindow):
 
             for i, row in enumerate(self.table):
                 for j, value in enumerate(row):
+                    if j == 1:
+                        value = '.'.join(value.split('-')[::-1])
                     self.tableWidget.setItem(i, j, QTableWidgetItem(str(value)))
 
     def add(self):
