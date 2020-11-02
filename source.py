@@ -24,7 +24,7 @@ class Window(QMainWindow):
 
         uic.loadUi("ui/main_window.ui", self)
 
-        self.graph = GraphWidget(self.user_id, self.graph_widget)
+        self.graph = GraphWidget(self.graph_widget)
         self.graph.hide()
 
         self.setWindowTitle("Учет расходов")
