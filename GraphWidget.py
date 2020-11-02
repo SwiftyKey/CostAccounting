@@ -71,8 +71,8 @@ def do_data_to_format_pie_graph(data):  # функция приведения д
 
 
 class GraphWidget(QWidget):
-    def __init__(self, user_id, parent=None):
-        self.userId = user_id  # для тестов
+    def __init__(self, parent=None):
+        self.userId = None
         super(GraphWidget, self).__init__(parent)
         uic.loadUi('ui/graph_window.ui', self)
         self.figure = plt.figure()
