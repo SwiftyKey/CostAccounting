@@ -51,7 +51,7 @@ def do_data_to_format_bar_and_plot_graph(data, labels,
         sorted_union_data_and_dates = sorted(union_data_and_dates,
                                              # сортировка для того, чтобы покупки соответствовали
                                              key=lambda tup: (
-                                             str_date_to_datetime(tup[1]), tup[0]))  # датам
+                                                 str_date_to_datetime(tup[1]), tup[0]))  # датам
         sorted_dates = all_dates
         sorted_data = [0] * len(all_dates)
         for j in sorted_union_data_and_dates:  # цикл для того, чтобы не было случая, когда покупок больше чем дат
@@ -71,18 +71,34 @@ def do_data_to_format_pie_graph(data):  # функция приведения д
 
 
 class GraphWidget(QWidget):
+<<<<<<< HEAD
     def __init__(self, user_id, parent=None):
+=======
+    def __init__(self, parent=None):
+>>>>>>> f04a0d8bc64e110a3482a341de066313b5c61227
         super(GraphWidget, self).__init__(parent)
-        uic.loadUi('ui/graph_window.ui', self)
 
         self.userId = None
+
+        uic.loadUi('ui/graph_window.ui', self)
+
+<<<<<<< HEAD
+        self.userId = None
+=======
+        self.figure = plt.figure()
+>>>>>>> f04a0d8bc64e110a3482a341de066313b5c61227
 
         self.label_if_not_found_inf = QLabel(self)
         self.label_if_not_found_inf.setText("")
 
+<<<<<<< HEAD
         self.figure = plt.figure()
         self.canvas = FigureCanvas(self.figure)
         
+=======
+        self.canvas = FigureCanvas(self.figure)
+
+>>>>>>> f04a0d8bc64e110a3482a341de066313b5c61227
         self.verticalLayout_3.addWidget(self.canvas)
         self.verticalLayout_3.addWidget(self.label_if_not_found_inf)
 
@@ -99,10 +115,13 @@ class GraphWidget(QWidget):
             self.listWidget.addItem(item)
         con.close()
 
+<<<<<<< HEAD
         self.first_date_year, self.first_date_month, self.first_date_day, \
             self.last_date_year, self.last_date_month, self.last_date_day, \
             self.index_diagram, self.list_categories = None, None, None, None, None, None, None, None
 
+=======
+>>>>>>> f04a0d8bc64e110a3482a341de066313b5c61227
         self.pushButton.clicked.connect(self.plot)
 
     def plot(self):  # функция для построения НЕОБХОДИМОЙ нам диаграммы

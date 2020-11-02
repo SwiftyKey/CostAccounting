@@ -90,19 +90,18 @@ class IsCorrectPassword:
         return True
 
 
-class NoteWindow(QDialog):
-    def __init__(self, user_id, parent=None):
-        super(NoteWindow, self).__init__(parent)
+class OperationsClass(QDialog):
+    def __init__(self, user_id, category, date, cost, filename, title, parent=None):
+        super(OperationsClass, self).__init__(parent)
 
         self.con = sqlite3.connect("Cost.db")
 
         self.user_id = user_id
-        self.category = ""
-        self.date = ""
-        self.cost = ""
+        self.category = category
+        self.date = date
+        self.cost = cost
 
-        uic.loadUi("ui/new_note_window.ui", self)
-        self.setWindowTitle("Новая запись")
+        self.loadUI(filename, title)
 
         cur = self.con.cursor()
         categories = map(lambda item: item[0], cur.execute("SELECT Title FROM Category").fetchall())
@@ -111,9 +110,12 @@ class NoteWindow(QDialog):
         self.select_cost.setSingleStep(0.01)
         self.select_cost.setRange(0.01, 10e9)
 
-        self.button_add.clicked.connect(self.add_note)
         self.button_create_category.clicked.connect(self.new_category)
         self.button_exit.clicked.connect(self.exit)
+
+    def loadUI(self, filename, title):
+        uic.loadUi(filename, self)
+        self.setWindowTitle(title)
 
     def new_category(self):
         title = QInputDialog.getText(self, "Новая категория",
@@ -126,6 +128,18 @@ class NoteWindow(QDialog):
 
             self.select_category.insertItem(0, title[0])
             self.select_category.setCurrentIndex(0)
+
+    def exit(self):
+        self.con.close()
+        self.close()
+
+
+class NoteWindow(OperationsClass):
+    def __init__(self, user_id, category, date, cost, parent=None):
+        super(NoteWindow, self).__init__(user_id, category, date, cost,
+                                         "ui/new_note_window.ui", "Новая запись", parent)
+
+        self.button_add.clicked.connect(self.add_note)
 
     def add_note(self):
         cur = self.con.cursor()
@@ -142,52 +156,20 @@ VALUES({self.user_id}, {self.category}, "{self.date}", {self.cost})''')
 
         self.exit()
 
-    def exit(self):
-        self.con.close()
-        self.close()
 
-
-class EditWindow(QDialog):
+class EditWindow(OperationsClass):
     def __init__(self, user_id, category, date, cost, parent=None):
-        super(EditWindow, self).__init__(parent)
+        super(EditWindow, self).__init__(user_id, category, date, cost,
+                                         "ui/edit_window.ui", "Изменение записи", parent)
 
-        self.con = sqlite3.connect("Cost.db")
-
-        self.user_id = user_id
-        self.category = category
-        self.date = date
-        self.cost = cost
-
-        uic.loadUi("ui/edit_window.ui", self)
-        self.setWindowTitle("Новая запись")
-
-        cur = self.con.cursor()
-        categories = map(lambda item: item[0], cur.execute("SELECT Title FROM Category").fetchall())
-        self.select_category.addItems(categories)
         self.select_category.setCurrentText(self.category)
 
-        self.select_cost.setSingleStep(0.01)
-        self.select_cost.setRange(0.01, 10e9)
         self.select_cost.setValue(float(self.cost))
 
         year, month, day = list(map(int, self.date.split('-')))
         self.select_date.setSelectedDate(QDate(year, month, day))
 
         self.button_edit.clicked.connect(self.edit_note)
-        self.button_create_category.clicked.connect(self.new_category)
-        self.button_exit.clicked.connect(self.exit)
-
-    def new_category(self):
-        title = QInputDialog.getText(self, "Новая категория",
-                                     "Введите название новой категории")
-        if title[0] and title[1]:
-            cur = self.con.cursor()
-            cur.execute(f"INSERT INTO Category(Title) VALUES('{title[0]}')")
-            cur.close()
-            self.con.commit()
-
-            self.select_category.insertItem(0, title[0])
-            self.select_category.setCurrentIndex(0)
 
     def edit_note(self):
         cur = self.con.cursor()
@@ -206,10 +188,6 @@ VALUES({self.user_id}, {category}, "{date}", {cost})''')
         self.con.commit()
 
         self.exit()
-
-    def exit(self):
-        self.con.close()
-        self.close()
 
 
 class SignInWindow(QDialog):
@@ -301,7 +279,7 @@ VALUES("{login}", "{hash_password(password.password)}")''')
         self.con.commit()
 
         self.parent().user_id = cur.execute(f'''SELECT UserId FROM User 
-WHERE Login = "{login}"''').fetchone()
+WHERE Login = "{login}"''').fetchone()[0]
 
         cur.close()
         self.con.close()
