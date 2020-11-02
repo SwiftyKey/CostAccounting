@@ -7,6 +7,10 @@ from PyQt5 import uic
 from PyQt5.QtWidgets import QApplication, QMainWindow, QTableWidgetItem, QMessageBox
 
 
+def except_hook(cls, exception, traceback):
+    sys.__excepthook__(cls, exception, traceback)
+
+
 class Window(QMainWindow):
     def __init__(self):
         super(QMainWindow, self).__init__()
@@ -73,7 +77,7 @@ class Window(QMainWindow):
         if self.statusBarChange("Войдите в аккаунт, чтобы добавить запись", self.user_id is None):
             return
 
-        new_note_form = NoteWindow(self.user_id, self)
+        new_note_form = NoteWindow(self.user_id, "", "", "", self)
         new_note_form.exec_()
 
         self.table = self.getCostData()
@@ -140,10 +144,7 @@ class Window(QMainWindow):
         pass
 
     def sortByCategories(self):
-        if self.statusBarChange("Войдите в аккаунт, для сортировки записей", self.user_id is None):
-            return
-        if self.statusBarChange("Записей должно быть больше одной", len(self.table) <= 1):
-            return
+        self.checkForSort()
 
         self.table.sort(key=lambda note: note[0])
         self.showNotes()
@@ -152,19 +153,13 @@ class Window(QMainWindow):
         pass
 
     def sortByDates(self):
-        if self.statusBarChange("Войдите в аккаунт, для сортировки записей", self.user_id is None):
-            return
-        if self.statusBarChange("Записей должно быть больше одной", len(self.table) <= 1):
-            return
+        self.checkForSort()
 
         self.table.sort(key=lambda note: note[1])
         self.showNotes()
 
     def sortByCosts(self):
-        if self.statusBarChange("Войдите в аккаунт, для сортировки записей", self.user_id is None):
-            return
-        if self.statusBarChange("Записей должно быть больше одной", len(self.table) <= 1):
-            return
+        self.checkForSort()
 
         self.table.sort(key=lambda note: note[2])
         self.showNotes()
@@ -176,9 +171,7 @@ class Window(QMainWindow):
         sign_in_form = SignInWindow(self)
         sign_in_form.exec_()
 
-        if self.user_id:
-            self.graph.set_id(self.user_id)
-            self.graph.show()
+        self.showGraph()
 
         self.table = self.getCostData()
         self.showNotes()
@@ -190,9 +183,7 @@ class Window(QMainWindow):
         sign_up_form = SignUpWindow(self)
         sign_up_form.exec_()
 
-        if self.user_id:
-            self.graph.set_id(self.user_id)
-            self.graph.show()
+        self.showGraph()
 
         self.table.clear()
         self.showNotes()
@@ -208,6 +199,17 @@ class Window(QMainWindow):
 
         self.user_id = None
 
+    def showGraph(self):
+        if self.user_id:
+            self.graph.set_id(self.user_id)
+            self.graph.show()
+
+    def checkForSort(self):
+        if self.statusBarChange("Войдите в аккаунт, для сортировки записей", self.user_id is None):
+            return
+        if self.statusBarChange("Записей должно быть больше одной", len(self.table) <= 1):
+            return
+
     def statusBarChange(self, message, condition):
         if condition:
             self.statusBar().showMessage(message)
@@ -222,4 +224,5 @@ if __name__ == '__main__':
     app = QApplication(sys.argv)
     main = Window()
     main.show()
+    sys.excepthook = except_hook
     sys.exit(app.exec_())
