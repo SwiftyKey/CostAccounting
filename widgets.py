@@ -135,8 +135,9 @@ WHERE Title = "{self.select_category.currentText()}"''').fetchone()[0]
         self.date = self.select_date.selectedDate().toString("yyyy-MM-dd")
         self.cost = self.select_cost.value()
 
-        cur.execute(f'''INSERT INTO Cost(UserId, CategoryId, Date, SumCost) 
-VALUES({self.user_id}, {self.category}, "{self.date}", {self.cost})''')
+        query = f'''INSERT INTO Cost(UserId, CategoryId, Date, SumCost) VALUES({self.user_id}, {self.category}, "{self.date}", {self.cost})'''
+
+        cur.execute(query)
         cur.close()
         self.con.commit()
 
@@ -301,7 +302,7 @@ VALUES("{login}", "{hash_password(password.password)}")''')
         self.con.commit()
 
         self.parent().user_id = cur.execute(f'''SELECT UserId FROM User 
-WHERE Login = "{login}"''').fetchone()
+WHERE Login = "{login}"''').fetchone()[0]
 
         cur.close()
         self.con.close()
