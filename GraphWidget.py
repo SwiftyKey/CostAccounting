@@ -1,7 +1,7 @@
 import sys
 from PyQt5.QtWidgets import QWidget, QApplication, QListWidgetItem, QLabel
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, QDate
 import matplotlib.pyplot as plt
 from PyQt5 import uic
 import sqlite3
@@ -92,6 +92,9 @@ class GraphWidget(QWidget):
 
         self.verticalLayout_3.addWidget(self.canvas)
         self.verticalLayout_3.addWidget(self.label_if_not_found_inf)
+
+        self.dateEdit.setMinimumDate(QDate.currentDate())
+        self.dateEdit_2.setMinimumDate(QDate.currentDate())
 
         con = sqlite3.connect('Cost.db')
         cur = con.cursor()
