@@ -1,7 +1,7 @@
 import sys
 from PyQt5.QtWidgets import QWidget, QApplication, QListWidgetItem, QLabel
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, QDate
 import matplotlib.pyplot as plt
 from PyQt5 import uic
 import sqlite3
@@ -78,20 +78,30 @@ class GraphWidget(QWidget):
 
         uic.loadUi('ui/graph_window.ui', self)
 
+        self.userId = None
+
         self.figure = plt.figure()
 
         self.label_if_not_found_inf = QLabel(self)
         self.label_if_not_found_inf.setText("")
 
+        self.figure = plt.figure()
+        self.canvas = FigureCanvas(self.figure)
+
         self.canvas = FigureCanvas(self.figure)
 
         self.verticalLayout_3.addWidget(self.canvas)
         self.verticalLayout_3.addWidget(self.label_if_not_found_inf)
+
+        self.dateEdit.setMinimumDate(QDate.currentDate())
+        self.dateEdit_2.setMinimumDate(QDate.currentDate())
+
         con = sqlite3.connect('Cost.db')
         cur = con.cursor()
         iterations = cur.execute('SELECT title FROM Category').fetchall()
         names_categories = [i[0] for i in iterations]  # получаем список всех категорий из БД
         self.list_categories = names_categories
+
         for i in names_categories:  # ListWidget заполняется категориями из БД
             item = QListWidgetItem()  # с возможностью отмечать необходимые ему категории
             item.setText(i)
@@ -99,12 +109,16 @@ class GraphWidget(QWidget):
             self.listWidget.addItem(item)
         con.close()
 
+        self.first_date_year, self.first_date_month, self.first_date_day, \
+            self.last_date_year, self.last_date_month, self.last_date_day, \
+            self.index_diagram, self.list_categories = None, None, None, None, None, None, None, None
+
         self.pushButton.clicked.connect(self.plot)
 
     def plot(self):  # функция для построения НЕОБХОДИМОЙ нам диаграммы
         self.first_date_year, self.first_date_month, self.first_date_day, \
-        self.last_date_year, self.last_date_month, self.last_date_day, \
-        self.index_diagram, self.list_categories = self.get_users_data()  # получаем все нужные данные
+            self.last_date_year, self.last_date_month, self.last_date_day, \
+            self.index_diagram, self.list_categories = self.get_users_data()  # получаем все нужные данные
         # для построения диаграмм
         if self.index_diagram == 0:
             self.build_pie_plot()
@@ -202,7 +216,8 @@ class GraphWidget(QWidget):
                                      and date(Date) <= date(?)) and UserId = ?""",
                              (first_date,
                               second_date,
-                              self.get_id())).fetchall()  # получаем все данные, удовлетворяющие временному отрезку, указанному пользователем
+                              self.get_id())).fetchall()
+        # получаем все данные, удовлетворяющие временному отрезку, указанному пользователем
         for i in range(len(result)):
             category = cur.execute("""SELECT Title FROM Category WHERE CategoryId = ?""",
                                    (result[i][2],)).fetchone()[0]
