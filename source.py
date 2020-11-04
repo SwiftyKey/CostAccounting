@@ -37,10 +37,6 @@ class Window(QMainWindow):
         self.operation_edit.triggered.connect(self.edit)
         self.operation_remove.triggered.connect(self.remove)
 
-        self.sort_by_category.triggered.connect(self.sortByCategories)
-        self.sort_by_date.triggered.connect(self.sortByDates)
-        self.sort_by_cost.triggered.connect(self.sortByCosts)
-
         self.filter_by_categories.triggered.connect(self.filterByCategories)
         self.filter_by_dates.triggered.connect(self.filterByDates)
         self.filter_by_costs.triggered.connect(self.filterByCosts)
@@ -48,6 +44,8 @@ class Window(QMainWindow):
         self.sign_in.triggered.connect(self.signIn)
         self.sign_up.triggered.connect(self.signUp)
         self.action_exit.triggered.connect(self.exit)
+
+        self.tableWidget.itemClicked.connect(self.sort)
 
     def __del__(self):
         self.con.close()
@@ -143,25 +141,8 @@ class Window(QMainWindow):
     def filterByCosts(self):
         pass
 
-    def sortByCategories(self):
-        self.checkForSort()
-
-        self.table.sort(key=lambda note: note[0])
-        self.showNotes()
-
     def sort(self):
-        pass
-
-    def sortByDates(self):
-        self.checkForSort()
-
-        self.table.sort(key=lambda note: note[1])
-        self.showNotes()
-
-    def sortByCosts(self):
-        self.checkForSort()
-
-        self.table.sort(key=lambda note: note[2])
+        self.table.sort(key=lambda note: note[self.sender().currentIndex()])
         self.showNotes()
 
     def signIn(self):

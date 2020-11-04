@@ -176,14 +176,18 @@ class EditWindow(OperationsClass):
 
         self.category = cur.execute(f'''SELECT CategoryId FROM Category 
 WHERE Title = "{self.category}"''').fetchone()[0]
+
         category = cur.execute(f'''SELECT CategoryId FROM Category 
 WHERE Title = "{self.select_category.currentText()}"''').fetchone()[0]
         date = self.select_date.selectedDate().toString("yyyy-MM-dd")
         cost = self.select_cost.value()
 
         if self.cost != cost or self.category != category or self.date != date:
-            cur.execute(f'''INSERT INTO Cost(UserId, CategoryId, Date, SumCost)
-VALUES({self.user_id}, {category}, "{date}", {cost})''')
+            cost_id = cur.execute(f'''SELECT CostId FROM Cost 
+WHERE UserId={self.user_id} AND CategoryId={self.category} 
+AND Date="{self.date}" AND SumCost={self.cost}''').fetchone()[0]
+            cur.execute(f'''UPDATE Cost SET UserId={self.user_id}, 
+CategoryId={category}, Date="{date}", SumCost={cost} WHERE CostId={cost_id}''')
         cur.close()
         self.con.commit()
 
