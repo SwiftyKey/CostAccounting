@@ -1,7 +1,7 @@
 import sqlite3
 import sys
 
-from widgets import NoteWindow, EditWindow, CategoryFiler, DateFilter, \
+from widgets import NoteWindow, EditWindow, CategoryFilter, DateFilter, \
     CostFilter, SignInWindow, SignUpWindow
 from GraphWidget import GraphWidget
 from PyQt5 import uic
@@ -46,7 +46,7 @@ class Window(QMainWindow):
         self.sign_up.triggered.connect(self.signUp)
         self.action_exit.triggered.connect(self.exit)
 
-        self.tableWidget.itemClicked.connect(self.sort)
+        self.tableWidget.horizontalHeader().sectionClicked.connect(self.sort)
 
     def __del__(self):
         self.con.close()
@@ -146,7 +146,7 @@ class Window(QMainWindow):
 Cost.CategoryId = Category.CategoryId 
 WHERE UserId={self.user_id} ORDER BY Title''').fetchall()
 
-        filter_form = CategoryFiler(self.user_id, categories, parent=self)
+        filter_form = CategoryFilter(self.user_id, categories, parent=self)
         filter_form.exec_()
 
         self.showNotes()
@@ -188,14 +188,13 @@ WHERE UserId={self.user_id} ORDER BY Date''').fetchall()
         self.showNotes()
         self.table = self.getCostData()
 
-    def checkForSort(self):
+    def sort(self, index):
         if self.statusBarChange("Войдите в аккаунт, для сортировки записей", self.user_id is None):
             return
         if self.statusBarChange("Записей должно быть больше одной", len(self.table) <= 1):
             return
 
-    def sort(self):
-        self.table.sort(key=lambda note: note[self.sender().currentIndex()])
+        self.table.sort(key=lambda note: note[index])
         self.showNotes()
 
     def signIn(self):

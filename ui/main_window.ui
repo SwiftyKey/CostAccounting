@@ -129,16 +129,25 @@
    </property>
   </action>
   <action name="filter_by_categories">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>По категориям</string>
    </property>
   </action>
   <action name="filter_by_dates">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>По датам</string>
    </property>
   </action>
   <action name="filter_by_costs">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>По ценам</string>
    </property>
