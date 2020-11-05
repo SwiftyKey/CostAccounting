@@ -1,7 +1,8 @@
 import sqlite3
 import sys
 
-from widgets import NoteWindow, EditWindow, SignInWindow, SignUpWindow
+from widgets import NoteWindow, EditWindow, CategoryFiler, DateFilter, \
+    CostFilter, SignInWindow, SignUpWindow
 from GraphWidget import GraphWidget
 from PyQt5 import uic
 from PyQt5.QtWidgets import QApplication, QMainWindow, QTableWidgetItem, QMessageBox
@@ -133,13 +134,59 @@ class Window(QMainWindow):
         self.showNotes()
 
     def filterByCategories(self):
-        pass
+        if self.statusBarChange("Войдите в аккаунт, чтобы отфильтровать записи",
+                                self.user_id is None):
+            return
+        if self.statusBarChange("Должна быть хотя бы одна запись", not len(self.table)):
+            return
+
+        cur = self.con.cursor()
+
+        categories = cur.execute(f'''SELECT DISTINCT Title FROM Cost INNER JOIN Category ON 
+Cost.CategoryId = Category.CategoryId 
+WHERE UserId={self.user_id} ORDER BY Title''').fetchall()
+
+        filter_form = CategoryFiler(self.user_id, categories, parent=self)
+        filter_form.exec_()
+
+        self.showNotes()
+        self.table = self.getCostData()
 
     def filterByDates(self):
-        pass
+        if self.statusBarChange("Войдите в аккаунт, чтобы отфильтровать записи",
+                                self.user_id is None):
+            return
+        if self.statusBarChange("Должна быть хотя бы одна запись", not len(self.table)):
+            return
+
+        cur = self.con.cursor()
+
+        dates = cur.execute(f'''SELECT DISTINCT Date FROM Cost 
+WHERE UserId={self.user_id} ORDER BY Date''').fetchall()
+
+        filter_form = DateFilter(self.user_id, dates, parent=self)
+        filter_form.exec_()
+
+        self.showNotes()
+        self.table = self.getCostData()
 
     def filterByCosts(self):
-        pass
+        if self.statusBarChange("Войдите в аккаунт, чтобы отфильтровать записи",
+                                self.user_id is None):
+            return
+        if self.statusBarChange("Должна быть хотя бы одна запись", not len(self.table)):
+            return
+
+        cur = self.con.cursor()
+
+        costs = cur.execute(f'''SELECT DISTINCT SumCost FROM Cost 
+        WHERE UserId={self.user_id} ORDER BY SumCost''').fetchall()
+
+        filter_form = CostFilter(self.user_id, costs, parent=self)
+        filter_form.exec_()
+
+        self.showNotes()
+        self.table = self.getCostData()
 
     def sort(self):
         self.table.sort(key=lambda note: note[self.sender().currentIndex()])

@@ -1,6 +1,6 @@
 from PyQt5 import uic, QtGui
-from PyQt5.QtCore import QDate
-from PyQt5.QtWidgets import QDialog, QInputDialog
+from PyQt5.QtCore import QDate, Qt
+from PyQt5.QtWidgets import QDialog, QInputDialog, QListWidgetItem
 
 import sqlite3
 import uuid
@@ -192,6 +192,120 @@ CategoryId={category}, Date="{date}", SumCost={cost} WHERE CostId={cost_id}''')
         self.con.commit()
 
         self.exit()
+
+
+class CategoryFiler(QDialog):
+    def __init__(self, user_id, *categories, parent=None):
+        super(CategoryFiler, self).__init__(parent)
+
+        self.con = sqlite3.connect("Cost.db")
+
+        self.user_id = user_id
+        self.categories = categories
+
+        uic.loadUi("ui/filter_by_categories.ui", self)
+
+        for category in self.categories[0]:
+            item = QListWidgetItem(category[0])
+            item.setCheckState(Qt.Checked)
+            self.listWidget.addItem(item)
+
+        self.button_filter.clicked.connect(self.filter_out)
+        self.button_exit.clicked.connect(self.exit)
+
+    def filter_out(self):
+        cur = self.con.cursor()
+
+        categories_checked = []
+        for i in range(self.listWidget.count()):
+            list_item = self.listWidget.item(i)
+            if list_item.checkState():
+                categories_checked.append(list_item.text())
+
+        new_table = cur.execute(f'''SELECT Title, Date, SumCost FROM Cost INNER JOIN Category ON 
+Cost.CategoryId = Category.CategoryId 
+WHERE Title in ({", ".join(f'"{category}"' for category in categories_checked)})''').fetchall()
+
+        cur.close()
+        self.parent().table = new_table
+        self.exit()
+
+    def exit(self):
+        self.con.close()
+        self.close()
+
+
+class DateFilter(QDialog):
+    def __init__(self, user_id, *dates, parent=None):
+        super(DateFilter, self).__init__(parent)
+
+        self.con = sqlite3.connect("Cost.db")
+
+        self.user_id = user_id
+        self.dates = dates[0]
+
+        uic.loadUi("ui/filter_by_dates.ui", self)
+
+        year_from, month_from, day_from = list(map(int, self.dates[0][0].split('-')))
+        self.date_from.setSelectedDate(QDate(year_from, month_from, day_from))
+
+        year_to, month_to, day_to = list(map(int, self.dates[-1][0].split('-')))
+        self.date_to.setSelectedDate(QDate(year_to, month_to, day_to))
+
+        self.button_filter.clicked.connect(self.filter_out)
+        self.button_exit.clicked.connect(self.exit)
+
+    def filter_out(self):
+        cur = self.con.cursor()
+
+        new_table = cur.execute(f'''SELECT Title, Date, SumCost FROM Cost INNER JOIN Category ON 
+Cost.CategoryId = Category.CategoryId 
+WHERE Date BETWEEN "{self.date_from.selectedDate().toString("yyyy-MM-dd")}" AND 
+"{self.date_to.selectedDate().toString("yyyy-MM-dd")}"''').fetchall()
+
+        cur.close()
+        self.parent().table = new_table
+        self.exit()
+
+    def exit(self):
+        self.con.close()
+        self.close()
+
+
+class CostFilter(QDialog):
+    def __init__(self, user_id, *costs, parent=None):
+        super(CostFilter, self).__init__(parent)
+
+        self.con = sqlite3.connect("Cost.db")
+
+        self.user_id = user_id
+        self.costs = costs[0]
+
+        uic.loadUi("ui/filter_by_costs.ui", self)
+
+        self.cost_from.setRange(float(self.costs[0][0]), float(self.costs[-1][0]))
+        self.cost_from.setValue(float(self.costs[0][0]))
+        self.cost_to.setRange(float(self.costs[0][0]), float(self.costs[-1][0]))
+        self.cost_to.setValue(float(self.costs[-1][0]))
+
+        self.button_filter.clicked.connect(self.filter_out)
+        self.button_exit.clicked.connect(self.exit)
+
+    def filter_out(self):
+        cur = self.con.cursor()
+
+        new_table = cur.execute(f'''SELECT Title, Date, SumCost FROM Cost INNER JOIN Category ON 
+Cost.CategoryId = Category.CategoryId 
+WHERE SumCost BETWEEN {self.cost_from.value()} AND 
+{self.cost_to.value()}''').fetchall()
+
+        cur.close()
+        self.parent().table = new_table
+        self.exit()
+
+    def exit(self):
+        self.con.close()
+        self.close()
 
 
 class SignInWindow(QDialog):
