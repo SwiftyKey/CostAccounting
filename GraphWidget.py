@@ -110,15 +110,15 @@ class GraphWidget(QWidget):
         con.close()
 
         self.first_date_year, self.first_date_month, self.first_date_day, \
-            self.last_date_year, self.last_date_month, self.last_date_day, \
-            self.index_diagram, self.list_categories = None, None, None, None, None, None, None, None
+        self.last_date_year, self.last_date_month, self.last_date_day, \
+        self.index_diagram, self.list_categories = None, None, None, None, None, None, None, None
 
         self.pushButton.clicked.connect(self.plot)
 
     def plot(self):  # функция для построения НЕОБХОДИМОЙ нам диаграммы
         self.first_date_year, self.first_date_month, self.first_date_day, \
-            self.last_date_year, self.last_date_month, self.last_date_day, \
-            self.index_diagram, self.list_categories = self.get_users_data()  # получаем все нужные
+        self.last_date_year, self.last_date_month, self.last_date_day, \
+        self.index_diagram, self.list_categories = self.get_users_data()  # получаем все нужные
         # данные для построения диаграмм
         if self.index_diagram == 0:
             self.build_pie_plot()
@@ -186,7 +186,7 @@ class GraphWidget(QWidget):
         data_to_build_graph, all_dates = do_data_to_format_bar_and_plot_graph(data,
                                                                               labels_graph,
                                                                               list_dates_to_format(
-                                                                                data_to_build_graph))
+                                                                                  data_to_build_graph))
         if labels_graph:
             self.label_if_not_found_inf.setText("")
             ax = self.figure.add_subplot(111)
@@ -256,8 +256,8 @@ class GraphWidget(QWidget):
         last_date = self.dateEdit_2.date()  # возвращает объект типа QDate
         diagram = self.comboBox.currentIndex()  # индекс графика
         return first_date.year(), first_date.month(), first_date.day(), \
-                   last_date.year(), last_date.month(), last_date.day(), \
-                   diagram, list_categories  # раскладываем даты на три составляющих
+               last_date.year(), last_date.month(), last_date.day(), \
+               diagram, list_categories  # раскладываем даты на три составляющих
         # для дальнейших операций с ними
 
     def get_id(self):
