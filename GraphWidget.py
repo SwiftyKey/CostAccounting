@@ -32,8 +32,8 @@ def format_string(pct, number):  # функция форматирования �
 
 
 def do_data_to_format_bar_and_plot_graph(data, labels,
-                                         dates):  # функция приведения полученных данных к удобному виду
-    # для построения столбчатой диаграммы и графика
+                                         dates):  # функция приведения полученных данных
+    # к удобному виду для построения столбчатой диаграммы и графика
     format_list = []
     all_dates = []
     for i in dates:  # создается список всех дат
@@ -54,13 +54,13 @@ def do_data_to_format_bar_and_plot_graph(data, labels,
                                                  str_date_to_datetime(tup[1]), tup[0]))  # датам
         sorted_dates = all_dates
         sorted_data = [0] * len(all_dates)
-        for j in sorted_union_data_and_dates:  # цикл для того, чтобы не было случая, когда покупок больше чем дат
-            sorted_data[sorted_dates.index(j[1])] += j[
-                0]  # иначе построение графика окажется невозможным
+        for j in sorted_union_data_and_dates:  # цикл для того, чтобы не было случая,
+            sorted_data[sorted_dates.index(j[1])] += j[0]  # когда покупок больше чем дат
+            # иначе построение графика окажется невозможным
 
         format_list.append((sorted_data, sorted_dates, labels[i]))
 
-    return format_list, all_dates  # возвращает еще все даты, чтобы в дальнейшнем не пришлось их считать заново
+    return format_list, all_dates  # возвращает еще все даты
 
 
 def do_data_to_format_pie_graph(data):  # функция приведения данных к формату, удобному для
@@ -118,8 +118,8 @@ class GraphWidget(QWidget):
     def plot(self):  # функция для построения НЕОБХОДИМОЙ нам диаграммы
         self.first_date_year, self.first_date_month, self.first_date_day, \
             self.last_date_year, self.last_date_month, self.last_date_day, \
-            self.index_diagram, self.list_categories = self.get_users_data()  # получаем все нужные данные
-        # для построения диаграмм
+            self.index_diagram, self.list_categories = self.get_users_data()  # получаем все нужные
+        # данные для построения диаграмм
         if self.index_diagram == 0:
             self.build_pie_plot()
         elif self.index_diagram == 1:
@@ -143,7 +143,8 @@ class GraphWidget(QWidget):
         else:  # иначе выводим надпись о том, что не найдены данные, удовлетворяющие запросу
             self.figure.clear()
             self.label_if_not_found_inf.setText("Не было найдено информации, "
-                                                "убедитесь, что данные введены верно и повторите запрос.")
+                                                "убедитесь, что данные"
+                                                " введены верно и повторите запрос.")
 
     def build_bar_plot(self):  # функция для построения столбчатой диаграммы
         self.figure.clear()
@@ -157,7 +158,8 @@ class GraphWidget(QWidget):
             ax = self.figure.add_subplot(111)
 
             values = [0] * len(
-                all_dates)  # значения для аргумента bottom, чтобы столбцы не наслаивались друг на друга
+                all_dates)  # значения для аргумента bottom,
+            # чтобы столбцы не наслаивались друг на друга
 
             for i in range(len(data_to_build_graph)):
                 ax.bar(data_to_build_graph[i][1], data_to_build_graph[i][0],
@@ -175,14 +177,16 @@ class GraphWidget(QWidget):
             self.canvas.draw()
         else:
             self.label_if_not_found_inf.setText("Не было найдено информации, "
-                                                "убедитесь, что данные введены верно и повторите запрос.")
+                                                "убедитесь, что данные введены "
+                                                "верно и повторите запрос.")
 
     def build_plot(self):
         self.figure.clear()
         data, labels_graph, data_to_build_graph = self.find_information_for_graph()
-        data_to_build_graph, all_dates = do_data_to_format_bar_and_plot_graph(data, labels_graph,
+        data_to_build_graph, all_dates = do_data_to_format_bar_and_plot_graph(data,
+                                                                              labels_graph,
                                                                               list_dates_to_format(
-                                                                                  data_to_build_graph))
+                                                                                data_to_build_graph))
         if labels_graph:
             self.label_if_not_found_inf.setText("")
             ax = self.figure.add_subplot(111)
@@ -197,7 +201,8 @@ class GraphWidget(QWidget):
             self.canvas.draw()
         else:
             self.label_if_not_found_inf.setText("Не было найдено информации, "
-                                                "убедитесь, что данные введены верно и повторите запрос.")
+                                                "убедитесь, что данные введены"
+                                                " верно и повторите запрос.")
 
     def find_information_for_graph(self):  # функция для нахождения суммы расходов по категориям
         first_date = date(self.first_date_year, self.first_date_month, self.first_date_day).strftime(
@@ -222,8 +227,8 @@ class GraphWidget(QWidget):
             category = cur.execute("""SELECT Title FROM Category WHERE CategoryId = ?""",
                                    (result[i][2],)).fetchone()[0]
             if category not in labels:
-                if category in self.list_categories:  # заполняются двумерные списки дат и значений, соответствующих
-                    labels.append(category)  # друг другу
+                if category in self.list_categories:  # заполняются двумерные списки дат и значений,
+                    labels.append(category)  # соответствующих друг другу
                     data.append([result[i][4]])
                     dates.append([result[i][3]])
                 else:
@@ -251,8 +256,9 @@ class GraphWidget(QWidget):
         last_date = self.dateEdit_2.date()  # возвращает объект типа QDate
         diagram = self.comboBox.currentIndex()  # индекс графика
         return first_date.year(), first_date.month(), first_date.day(), \
-               last_date.year(), last_date.month(), last_date.day(), \
-               diagram, list_categories  # раскладываем даты на три составляющих для дальнейших операций с ними
+                   last_date.year(), last_date.month(), last_date.day(), \
+                   diagram, list_categories  # раскладываем даты на три составляющих
+        # для дальнейших операций с ними
 
     def get_id(self):
         return self.userId
