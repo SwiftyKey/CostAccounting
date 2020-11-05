@@ -188,6 +188,12 @@ WHERE UserId={self.user_id} ORDER BY Date''').fetchall()
         self.showNotes()
         self.table = self.getCostData()
 
+    def checkForSort(self):
+        if self.statusBarChange("Войдите в аккаунт, для сортировки записей", self.user_id is None):
+            return
+        if self.statusBarChange("Записей должно быть больше одной", len(self.table) <= 1):
+            return
+
     def sort(self):
         self.table.sort(key=lambda note: note[self.sender().currentIndex()])
         self.showNotes()
@@ -231,12 +237,6 @@ WHERE UserId={self.user_id} ORDER BY Date''').fetchall()
         if self.user_id:
             self.graph.set_id(self.user_id)
             self.graph.show()
-
-    def checkForSort(self):
-        if self.statusBarChange("Войдите в аккаунт, для сортировки записей", self.user_id is None):
-            return
-        if self.statusBarChange("Записей должно быть больше одной", len(self.table) <= 1):
-            return
 
     def statusBarChange(self, message, condition):
         if condition:
