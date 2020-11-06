@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>478</width>
-    <height>441</height>
+    <width>374</width>
+    <height>156</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -70,20 +70,17 @@
       </widget>
      </item>
      <item>
-      <spacer name="horizontalSpacer">
-       <property name="orientation">
-        <enum>Qt::Horizontal</enum>
+      <widget class="QDateEdit" name="select_date">
+       <property name="font">
+        <font>
+         <family>Times New Roman</family>
+         <pointsize>14</pointsize>
+        </font>
        </property>
-       <property name="sizeHint" stdset="0">
-        <size>
-         <width>40</width>
-         <height>20</height>
-        </size>
+       <property name="calendarPopup">
+        <bool>true</bool>
        </property>
-      </spacer>
-     </item>
-     <item>
-      <widget class="QCalendarWidget" name="select_date"/>
+      </widget>
      </item>
     </layout>
    </item>

@@ -1,10 +1,11 @@
-from PyQt5 import uic, QtGui
-from PyQt5.QtCore import QDate, Qt
-from PyQt5.QtWidgets import QDialog, QInputDialog, QListWidgetItem
-
 import sqlite3
 import uuid
 import hashlib
+import datetime
+
+from PyQt5 import uic, QtGui
+from PyQt5.QtCore import QDate, Qt
+from PyQt5.QtWidgets import QDialog, QInputDialog, QListWidgetItem
 
 LENGTH = 9
 SEQUENCES = ("qwertyuiop", "asdfghjkl", "zxcvbnm", "йцукенгшщзхъ", "фывапролджэё", "ячсмитьбю")
@@ -55,7 +56,7 @@ class IsCorrectPassword:
         self.password = password
 
     def is_valid_length(self):
-        return len(self.password) > 8
+        return len(self.password) > LENGTH
 
     def is_valid_registers(self):
         return self.password != self.password.lower() and self.password != self.password.upper()
@@ -80,7 +81,7 @@ class IsCorrectPassword:
 
     def check_password(self):
         if not self.is_valid_length():
-            raise LengthError("Длина пароля <= 8")
+            raise LengthError(f"Длина пароля <= {LENGTH}")
         if not self.is_valid_registers():
             raise LetterError("В пароле символы одного регистра")
         if not self.contains_digit():
@@ -109,6 +110,10 @@ class OperationsDialog(QDialog):
 
         self.select_cost.setSingleStep(0.01)
         self.select_cost.setRange(0.01, 10e9)
+
+        today = datetime.date.today()
+        year, month, day = today.year, today.month, today.day
+        self.select_date.setDate(QDate(year, month, day))
 
         self.button_create_category.clicked.connect(self.new_category)
         self.button_exit.clicked.connect(self.exit)
@@ -146,7 +151,7 @@ class NoteWindow(OperationsDialog):
 
         self.category = cur.execute(f'''SELECT CategoryId FROM Category 
 WHERE Title = "{self.select_category.currentText()}"''').fetchone()[0]
-        self.date = self.select_date.selectedDate().toString("yyyy-MM-dd")
+        self.date = self.select_date.date().toString("yyyy-MM-dd")
         self.cost = self.select_cost.value()
 
         cur.execute(f'''INSERT INTO Cost(UserId, CategoryId, Date, SumCost) 
@@ -167,7 +172,7 @@ class EditWindow(OperationsDialog):
         self.select_cost.setValue(float(self.cost))
 
         year, month, day = list(map(int, self.date.split('-')))
-        self.select_date.setSelectedDate(QDate(year, month, day))
+        self.select_date.setDate(QDate(year, month, day))
 
         self.button_edit.clicked.connect(self.edit_note)
 
@@ -179,7 +184,7 @@ WHERE Title = "{self.category}"''').fetchone()[0]
 
         category = cur.execute(f'''SELECT CategoryId FROM Category 
 WHERE Title = "{self.select_category.currentText()}"''').fetchone()[0]
-        date = self.select_date.selectedDate().toString("yyyy-MM-dd")
+        date = self.select_date.date().toString("yyyy-MM-dd")
         cost = self.select_cost.value()
 
         if self.cost != cost or self.category != category or self.date != date:
@@ -194,118 +199,89 @@ CategoryId={category}, Date="{date}", SumCost={cost} WHERE CostId={cost_id}''')
         self.exit()
 
 
-class CategoryFilter(QDialog):
-    def __init__(self, user_id, *categories, parent=None):
-        super(CategoryFilter, self).__init__(parent)
-
-        self.con = sqlite3.connect("Cost.db")
+class FilterDialog(QDialog):
+    def __init__(self, user_id, table, filename, title, *args, parent=None):
+        super(FilterDialog, self).__init__(parent)
 
         self.user_id = user_id
-        self.categories = categories
+        self.args = args[0][0]
+        self.table = table
 
-        uic.loadUi("ui/filter_by_categories.ui", self)
-
-        for category in self.categories[0]:
-            item = QListWidgetItem(category[0])
-            item.setCheckState(Qt.Checked)
-            self.listWidget.addItem(item)
+        self.loadUI(filename, title)
 
         self.button_filter.clicked.connect(self.filter_out)
         self.button_exit.clicked.connect(self.exit)
 
-    def filter_out(self):
-        cur = self.con.cursor()
+    def loadUI(self, filename, title):
+        uic.loadUi(filename, self)
+        self.setWindowTitle(title)
 
+    def filter_out(self):
+        pass
+
+    def exit(self):
+        self.close()
+
+
+class CategoryFilter(FilterDialog):
+    def __init__(self, user_id, table, *categories, parent=None):
+        super(CategoryFilter, self).__init__(user_id, table, "ui/filter_by_categories.ui",
+                                             "Фильтр по категория", categories, parent=parent)
+
+        for category in self.args:
+            item = QListWidgetItem(category)
+            item.setCheckState(Qt.Checked)
+            self.listWidget.addItem(item)
+
+    def filter_out(self):
         categories_checked = []
         for i in range(self.listWidget.count()):
             list_item = self.listWidget.item(i)
             if list_item.checkState():
                 categories_checked.append(list_item.text())
 
-        new_table = cur.execute(f'''SELECT Title, Date, SumCost FROM Cost INNER JOIN Category ON 
-Cost.CategoryId = Category.CategoryId 
-WHERE Title in ({", ".join(f'"{category}"' for category in categories_checked)})''').fetchall()
+        self.parent().setTable(list(filter(lambda x: x[0] in categories_checked, self.table)))
 
-        cur.close()
-        self.parent().table = new_table
         self.exit()
 
-    def exit(self):
-        self.con.close()
-        self.close()
 
+class DateFilter(FilterDialog):
+    def __init__(self, user_id, table, *dates, parent=None):
+        super(DateFilter, self).__init__(user_id, table, "ui/filter_by_dates.ui",
+                                         "Фильтр по датам", dates, parent=parent)
 
-class DateFilter(QDialog):
-    def __init__(self, user_id, *dates, parent=None):
-        super(DateFilter, self).__init__(parent)
+        year_from, month_from, day_from = list(map(int, self.args[0].split('-')))
+        self.date_from.setDate(QDate(year_from, month_from, day_from))
 
-        self.con = sqlite3.connect("Cost.db")
-
-        self.user_id = user_id
-        self.dates = dates[0]
-
-        uic.loadUi("ui/filter_by_dates.ui", self)
-
-        year_from, month_from, day_from = list(map(int, self.dates[0][0].split('-')))
-        self.date_from.setSelectedDate(QDate(year_from, month_from, day_from))
-
-        year_to, month_to, day_to = list(map(int, self.dates[-1][0].split('-')))
-        self.date_to.setSelectedDate(QDate(year_to, month_to, day_to))
-
-        self.button_filter.clicked.connect(self.filter_out)
-        self.button_exit.clicked.connect(self.exit)
+        year_to, month_to, day_to = list(map(int, self.args[-1].split('-')))
+        self.date_to.setDate(QDate(year_to, month_to, day_to))
 
     def filter_out(self):
-        cur = self.con.cursor()
+        date_from = self.date_from.date().toString("yyyy-MM-dd")
+        date_to = self.date_to.date().toString("yyyy-MM-dd")
 
-        new_table = cur.execute(f'''SELECT Title, Date, SumCost FROM Cost INNER JOIN Category ON 
-Cost.CategoryId = Category.CategoryId 
-WHERE Date BETWEEN "{self.date_from.selectedDate().toString("yyyy-MM-dd")}" AND 
-"{self.date_to.selectedDate().toString("yyyy-MM-dd")}"''').fetchall()
+        self.parent().setTable(list(filter(lambda x: date_from <= x[1] <= date_to, self.table)))
 
-        cur.close()
-        self.parent().table = new_table
         self.exit()
 
-    def exit(self):
-        self.con.close()
-        self.close()
 
+class CostFilter(FilterDialog):
+    def __init__(self, user_id, table, *costs, parent=None):
+        super(CostFilter, self).__init__(user_id, table, "ui/filter_by_costs.ui",
+                                         "Фильтр по ценам", costs, parent=parent)
 
-class CostFilter(QDialog):
-    def __init__(self, user_id, *costs, parent=None):
-        super(CostFilter, self).__init__(parent)
-
-        self.con = sqlite3.connect("Cost.db")
-
-        self.user_id = user_id
-        self.costs = costs[0]
-
-        uic.loadUi("ui/filter_by_costs.ui", self)
-
-        self.cost_from.setRange(float(self.costs[0][0]), float(self.costs[-1][0]))
-        self.cost_from.setValue(float(self.costs[0][0]))
-        self.cost_to.setRange(float(self.costs[0][0]), float(self.costs[-1][0]))
-        self.cost_to.setValue(float(self.costs[-1][0]))
-
-        self.button_filter.clicked.connect(self.filter_out)
-        self.button_exit.clicked.connect(self.exit)
+        self.cost_from.setRange(float(self.args[0]), float(self.args[-1]))
+        self.cost_from.setValue(float(self.args[0]))
+        self.cost_to.setRange(float(self.args[0]), float(self.args[-1]))
+        self.cost_to.setValue(float(self.args[-1]))
 
     def filter_out(self):
-        cur = self.con.cursor()
+        cost_from = self.cost_from.value()
+        cost_to = self.cost_to.value()
 
-        new_table = cur.execute(f'''SELECT Title, Date, SumCost FROM Cost INNER JOIN Category ON 
-Cost.CategoryId = Category.CategoryId 
-WHERE SumCost BETWEEN {self.cost_from.value()} AND 
-{self.cost_to.value()}''').fetchall()
+        self.parent().setTable(list(filter(lambda x: cost_from <= x[2] <= cost_to, self.table)))
 
-        cur.close()
-        self.parent().table = new_table
         self.exit()
-
-    def exit(self):
-        self.con.close()
-        self.close()
 
 
 class SignInWindow(QDialog):
@@ -315,6 +291,7 @@ class SignInWindow(QDialog):
         self.con = sqlite3.connect("Cost.db")
 
         uic.loadUi("ui/sign_in_window.ui", self)
+        self.setWindowTitle("Вход в аккаунт")
 
         self.button_sign_in.clicked.connect(self.signIn)
 
@@ -364,6 +341,7 @@ class SignUpWindow(QDialog):
         self.con = sqlite3.connect("Cost.db")
 
         uic.loadUi("ui/sign_up_window.ui", self)
+        self.setWindowTitle("Регестрация аккаунта")
 
         self.button_sign_up.clicked.connect(self.signUp)
 
