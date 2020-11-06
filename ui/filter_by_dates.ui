@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>650</width>
-    <height>273</height>
+    <width>643</width>
+    <height>111</height>
    </rect>
   </property>
   <property name="font">
@@ -30,10 +30,18 @@
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout">
      <item>
-      <widget class="QCalendarWidget" name="date_from"/>
+      <widget class="QDateEdit" name="date_from">
+       <property name="calendarPopup">
+        <bool>true</bool>
+       </property>
+      </widget>
      </item>
      <item>
-      <widget class="QCalendarWidget" name="date_to"/>
+      <widget class="QDateEdit" name="date_to">
+       <property name="calendarPopup">
+        <bool>true</bool>
+       </property>
+      </widget>
      </item>
     </layout>
    </item>

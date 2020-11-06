@@ -21,7 +21,7 @@ class Window(QMainWindow):
         self.con = sqlite3.connect("Cost.db")
 
         self.title = ["Категория", "Дата", "Цена"]
-        self.table = self.getCostData()
+        self.table = self.getTable()
 
         uic.loadUi("ui/main_window.ui", self)
 
@@ -51,7 +51,7 @@ class Window(QMainWindow):
     def __del__(self):
         self.con.close()
 
-    def getCostData(self):
+    def getTable(self):
         if self.user_id:
             cur = self.con.cursor()
             result = cur.execute(f'''SELECT Title, Date, SumCost FROM Cost INNER JOIN Category ON 
@@ -61,6 +61,9 @@ class Window(QMainWindow):
             return result
         else:
             return []
+
+    def setTable(self, new_table):
+        self.table = new_table
 
     def showNotes(self):
         if self.user_id:
@@ -79,7 +82,7 @@ class Window(QMainWindow):
         new_note_form = NoteWindow(self.user_id, "", "", "", self)
         new_note_form.exec_()
 
-        self.table = self.getCostData()
+        self.table = self.getTable()
         self.showNotes()
 
     def remove(self):
@@ -93,7 +96,8 @@ class Window(QMainWindow):
         if rows:
             valid = QMessageBox.question(
                 self, '', "Действительно удалить записи с номерами " +
-                          ", ".join(str(i.row() + 1) for i in rows) + '?',
+                          ", ".join(str(row + 1) for row in sorted(list(set(map(lambda i: i.row(),
+                                                                                rows))))) + '?',
                 QMessageBox.Yes, QMessageBox.No)
 
             if valid == QMessageBox.Yes:
@@ -107,13 +111,15 @@ class Window(QMainWindow):
     WHERE CategoryId={category} AND Date="{date}" AND SumCost={cost}''')
 
                 self.statusBar().showMessage("Записи с номерами "
-                                             + ", ".join(str(row.row() + 1) for row in rows)
+                                             + ", ".join(str(row + 1) for row in
+                                                         sorted(list(set(map(lambda i: i.row(),
+                                                                             rows)))))
                                              + " успешно удалены")
 
                 cur.close()
                 self.con.commit()
 
-                self.table = self.getCostData()
+                self.table = self.getTable()
                 self.showNotes()
 
     def edit(self):
@@ -130,7 +136,7 @@ class Window(QMainWindow):
         edit_form = EditWindow(self.user_id, category, date, cost, self)
         edit_form.exec_()
 
-        self.table = self.getCostData()
+        self.table = self.getTable()
         self.showNotes()
 
     def filterByCategories(self):
@@ -140,53 +146,49 @@ class Window(QMainWindow):
         if self.statusBarChange("Должна быть хотя бы одна запись", not len(self.table)):
             return
 
-        cur = self.con.cursor()
+        if self.filter_by_categories.isChecked():
+            categories = sorted(list(set(map(lambda x: x[0], self.table))))
 
-        categories = cur.execute(f'''SELECT DISTINCT Title FROM Cost INNER JOIN Category ON 
-Cost.CategoryId = Category.CategoryId 
-WHERE UserId={self.user_id} ORDER BY Title''').fetchall()
+            filter_form = CategoryFilter(self.user_id, self.table, categories, parent=self)
+            filter_form.exec_()
 
-        filter_form = CategoryFilter(self.user_id, categories, parent=self)
-        filter_form.exec_()
-
-        self.showNotes()
-        self.table = self.getCostData()
+            self.showNotes()
+        else:
+            self.table = self.getTable()
 
     def filterByDates(self):
-        if self.statusBarChange("Войдите в аккаунт, чтобы отфильтровать записи",
-                                self.user_id is None):
-            return
-        if self.statusBarChange("Должна быть хотя бы одна запись", not len(self.table)):
-            return
+        if self.filter_by_dates.isChecked():
+            if self.statusBarChange("Войдите в аккаунт, чтобы отфильтровать записи",
+                                    self.user_id is None):
+                return
+            if self.statusBarChange("Должна быть хотя бы одна запись", not len(self.table)):
+                return
 
-        cur = self.con.cursor()
+            dates = sorted(list(set(map(lambda x: x[1], self.table))))
 
-        dates = cur.execute(f'''SELECT DISTINCT Date FROM Cost 
-WHERE UserId={self.user_id} ORDER BY Date''').fetchall()
+            filter_form = DateFilter(self.user_id, self.table, dates, parent=self)
+            filter_form.exec_()
 
-        filter_form = DateFilter(self.user_id, dates, parent=self)
-        filter_form.exec_()
-
-        self.showNotes()
-        self.table = self.getCostData()
+            self.showNotes()
+        else:
+            self.table = self.getTable()
 
     def filterByCosts(self):
-        if self.statusBarChange("Войдите в аккаунт, чтобы отфильтровать записи",
-                                self.user_id is None):
-            return
-        if self.statusBarChange("Должна быть хотя бы одна запись", not len(self.table)):
-            return
+        if self.filter_by_costs.isChecked():
+            if self.statusBarChange("Войдите в аккаунт, чтобы отфильтровать записи",
+                                    self.user_id is None):
+                return
+            if self.statusBarChange("Должна быть хотя бы одна запись", not len(self.table)):
+                return
 
-        cur = self.con.cursor()
+            costs = sorted(list(set(map(lambda x: x[2], self.table))))
 
-        costs = cur.execute(f'''SELECT DISTINCT SumCost FROM Cost 
-        WHERE UserId={self.user_id} ORDER BY SumCost''').fetchall()
+            filter_form = CostFilter(self.user_id, self.table, costs, parent=self)
+            filter_form.exec_()
 
-        filter_form = CostFilter(self.user_id, costs, parent=self)
-        filter_form.exec_()
-
-        self.showNotes()
-        self.table = self.getCostData()
+            self.showNotes()
+        else:
+            self.table = self.getTable()
 
     def sort(self, index):
         if self.statusBarChange("Войдите в аккаунт, для сортировки записей", self.user_id is None):
@@ -206,7 +208,7 @@ WHERE UserId={self.user_id} ORDER BY Date''').fetchall()
 
         self.showGraph()
 
-        self.table = self.getCostData()
+        self.table = self.getTable()
         self.showNotes()
 
     def signUp(self):

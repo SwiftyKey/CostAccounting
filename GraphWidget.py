@@ -73,6 +73,7 @@ def do_data_to_format_bar_and_plot_graph(data, labels, dates):
 # функция приведения данных к формату, удобному для  построения круговой диаграммы
 def do_data_to_format_pie_graph(data):
     format_data = []
+
     for i in range(len(data)):
         format_data.append(sum(data[i]))
     return format_data
@@ -107,28 +108,24 @@ class GraphWidget(QWidget):
         names_categories = [i[0] for i in iterations]
         self.list_categories = names_categories
         # ListWidget заполняется категориями из БД с возможностью отмечать необходимые ему категории
+
         for i in names_categories:
             item = QListWidgetItem()
             item.setText(i)
             item.setCheckState(Qt.Checked)
             self.listWidget.addItem(item)
 
-<<<<<<< HEAD
         self.first_date_year, self.first_date_month, self.first_date_day, \
-        self.last_date_year, self.last_date_month, self.last_date_day, \
-        self.index_diagram, self.list_categories = None, None, None, None, None, None, None, None
+            self.last_date_year, self.last_date_month, self.last_date_day, \
+            self.index_diagram, self.list_categories = None, None, None, None, None, None, None, None
 
         self.pushButton.clicked.connect(self.plot)
 
     def plot(self):  # функция для построения НЕОБХОДИМОЙ нам диаграммы
         self.first_date_year, self.first_date_month, self.first_date_day, \
-        self.last_date_year, self.last_date_month, self.last_date_day, \
-        self.index_diagram, self.list_categories = self.get_users_data()  # получаем все нужные
+            self.last_date_year, self.last_date_month, self.last_date_day, \
+            self.index_diagram, self.list_categories = self.get_users_data()  # получаем все нужные
         # данные для построения диаграмм
-=======
-        self.first_date_year, self.first_date_month, self.first_date_day = None, None, None
-        self.last_date_year, self.last_date_month, self.last_date_day = None, None, None
-        self.index_diagram, self.list_categories = None, None
 
         self.pushButton.clicked.connect(self.plot)
 
@@ -139,10 +136,9 @@ class GraphWidget(QWidget):
     def plot(self):
         # получаем все нужные данные для построения диаграмм
         self.first_date_year, self.first_date_month, self.first_date_day, self.last_date_year, \
-        self.last_date_month, self.last_date_day, self.index_diagram, self.list_categories = \
+            self.last_date_month, self.last_date_day, self.index_diagram, self.list_categories = \
             self.get_users_data()
 
->>>>>>> 3b95075417bb1015b7721174b238e3679f6b7968
         if self.index_diagram == 0:
             self.build_pie_plot()
         elif self.index_diagram == 1:
@@ -219,17 +215,11 @@ class GraphWidget(QWidget):
         self.figure.clear()
 
         data, labels_graph, data_to_build_graph = self.find_information_for_graph()
-<<<<<<< HEAD
-        data_to_build_graph, all_dates = do_data_to_format_bar_and_plot_graph(data,
-                                                                              labels_graph,
-                                                                              list_dates_to_format(
-                                                                                  data_to_build_graph))
-=======
+
         data_to_build_graph, all_dates = \
             do_data_to_format_bar_and_plot_graph(data, labels_graph,
                                                  list_dates_to_format(data_to_build_graph))
 
->>>>>>> 3b95075417bb1015b7721174b238e3679f6b7968
         if labels_graph:
             self.label_if_not_found_inf.setText("")
 
@@ -260,9 +250,11 @@ class GraphWidget(QWidget):
 
         # приводим даты к правильному формату для того, чтобы работать с SqLite
         cur = self.con.cursor()
+
         data = []
         labels = []
         dates = []
+
         something = 0
         result = cur.execute("""SELECT * FROM Cost 
         WHERE (date(Date) >= date(?) and date(Date) <= date(?)) and UserId = ?""",
@@ -294,31 +286,21 @@ class GraphWidget(QWidget):
     # функция для получения необходимой для нас информации для построения диаграммы
     def get_users_data(self):
         list_categories = []
+
         for i in range(self.listWidget.count()):
             list_item = self.listWidget.item(i)
             if list_item.checkState():
                 list_categories.append(list_item.text())
-<<<<<<< HEAD
+
         first_date = self.dateEdit.date()  # возвращает объект типа QDate
         last_date = self.dateEdit_2.date()  # возвращает объект типа QDate
+
         diagram = self.comboBox.currentIndex()  # индекс графика
+
         return first_date.year(), first_date.month(), first_date.day(), \
                last_date.year(), last_date.month(), last_date.day(), \
                diagram, list_categories  # раскладываем даты на три составляющих
         # для дальнейших операций с ними
-=======
-
-        # возвращает объекты типа QDate
-        first_date = self.dateEdit.date()
-        last_date = self.dateEdit_2.date()
-
-        # индекс графика
-        diagram = self.comboBox.currentIndex()
-
-        # раскладываем даты на три составляющих для дальнейших операций с ними
-        return first_date.year(), first_date.month(), first_date.day(), last_date.year(), \
-               last_date.month(), last_date.day(), diagram, list_categories
->>>>>>> 3b95075417bb1015b7721174b238e3679f6b7968
 
     def get_id(self):
         return self.userId
