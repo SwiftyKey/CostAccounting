@@ -90,9 +90,9 @@ class IsCorrectPassword:
         return True
 
 
-class OperationsClass(QDialog):
+class OperationsDialog(QDialog):
     def __init__(self, user_id, category, date, cost, filename, title, parent=None):
-        super(OperationsClass, self).__init__(parent)
+        super(OperationsDialog, self).__init__(parent)
 
         self.con = sqlite3.connect("Cost.db")
 
@@ -134,7 +134,7 @@ class OperationsClass(QDialog):
         self.close()
 
 
-class NoteWindow(OperationsClass):
+class NoteWindow(OperationsDialog):
     def __init__(self, user_id, category, date, cost, parent=None):
         super(NoteWindow, self).__init__(user_id, category, date, cost,
                                          "ui/new_note_window.ui", "Новая запись", parent)
@@ -157,7 +157,7 @@ VALUES({self.user_id}, {self.category}, "{self.date}", {self.cost})''')
         self.exit()
 
 
-class EditWindow(OperationsClass):
+class EditWindow(OperationsDialog):
     def __init__(self, user_id, category, date, cost, parent=None):
         super(EditWindow, self).__init__(user_id, category, date, cost,
                                          "ui/edit_window.ui", "Изменение записи", parent)
@@ -194,9 +194,9 @@ CategoryId={category}, Date="{date}", SumCost={cost} WHERE CostId={cost_id}''')
         self.exit()
 
 
-class CategoryFiler(QDialog):
+class CategoryFilter(QDialog):
     def __init__(self, user_id, *categories, parent=None):
-        super(CategoryFiler, self).__init__(parent)
+        super(CategoryFilter, self).__init__(parent)
 
         self.con = sqlite3.connect("Cost.db")
 
