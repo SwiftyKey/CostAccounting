@@ -341,7 +341,7 @@ class SignUpWindow(QDialog):
         self.con = sqlite3.connect("Cost.db")
 
         uic.loadUi("ui/sign_up_window.ui", self)
-        self.setWindowTitle("Регестрация аккаунта")
+        self.setWindowTitle("Регистрация аккаунта")
 
         self.button_sign_up.clicked.connect(self.signUp)
 

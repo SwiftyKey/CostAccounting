@@ -227,6 +227,7 @@ class Window(QMainWindow):
         if self.statusBarChange("Нельзя выйти, так как вы не вошли в аккаунт", self.user_id is None):
             return
 
+        self.graph.clear()
         self.graph.hide()
 
         self.table.clear()
