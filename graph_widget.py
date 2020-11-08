@@ -85,7 +85,7 @@ class GraphWidget(QWidget):
 
         self.userId = None
 
-        uic.loadUi('ui/graph_window.ui', self)
+        uic.loadUi('ui/graph_widget.ui', self)
 
         self.figure = plt.figure()
 

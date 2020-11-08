@@ -2,6 +2,7 @@ import sqlite3
 import uuid
 import hashlib
 import datetime
+import graph_widget
 
 from PyQt5 import uic, QtGui
 from PyQt5.QtCore import QDate, Qt
@@ -139,10 +140,10 @@ class OperationsDialog(QDialog):
         self.close()
 
 
-class NoteWindow(OperationsDialog):
+class AddNoteDialog(OperationsDialog):
     def __init__(self, user_id, category, date, cost, parent=None):
-        super(NoteWindow, self).__init__(user_id, category, date, cost,
-                                         "ui/new_note_window.ui", "Новая запись", parent)
+        super(AddNoteDialog, self).__init__(user_id, category, date, cost,
+                                            "ui/add_note_dialog.ui", "Новая запись", parent)
 
         self.button_add.clicked.connect(self.add_note)
 
@@ -162,10 +163,10 @@ VALUES({self.user_id}, {self.category}, "{self.date}", {self.cost})''')
         self.exit()
 
 
-class EditWindow(OperationsDialog):
+class EditDialog(OperationsDialog):
     def __init__(self, user_id, category, date, cost, parent=None):
-        super(EditWindow, self).__init__(user_id, category, date, cost,
-                                         "ui/edit_window.ui", "Изменение записи", parent)
+        super(EditDialog, self).__init__(user_id, category, date, cost,
+                                         "ui/edit_dialog.ui", "Изменение записи", parent)
 
         self.select_category.setCurrentText(self.category)
 
@@ -223,10 +224,11 @@ class FilterDialog(QDialog):
         self.close()
 
 
-class CategoryFilter(FilterDialog):
+class CategoryFilterDialog(FilterDialog):
     def __init__(self, user_id, table, *categories, parent=None):
-        super(CategoryFilter, self).__init__(user_id, table, "ui/filter_by_categories.ui",
-                                             "Фильтр по категория", categories, parent=parent)
+        super(CategoryFilterDialog, self).__init__(user_id, table,
+                                                   "ui/filter_by_categories_dialog.ui",
+                                                   "Фильтр по категория", categories, parent=parent)
 
         for category in self.args:
             item = QListWidgetItem(category)
@@ -245,10 +247,10 @@ class CategoryFilter(FilterDialog):
         self.exit()
 
 
-class DateFilter(FilterDialog):
+class DateFilterDialog(FilterDialog):
     def __init__(self, user_id, table, *dates, parent=None):
-        super(DateFilter, self).__init__(user_id, table, "ui/filter_by_dates.ui",
-                                         "Фильтр по датам", dates, parent=parent)
+        super(DateFilterDialog, self).__init__(user_id, table, "ui/filter_by_dates_dialog.ui",
+                                               "Фильтр по датам", dates, parent=parent)
 
         year_from, month_from, day_from = list(map(int, self.args[0].split('-')))
         self.date_from.setDate(QDate(year_from, month_from, day_from))
@@ -265,10 +267,10 @@ class DateFilter(FilterDialog):
         self.exit()
 
 
-class CostFilter(FilterDialog):
+class CostFilterDialog(FilterDialog):
     def __init__(self, user_id, table, *costs, parent=None):
-        super(CostFilter, self).__init__(user_id, table, "ui/filter_by_costs.ui",
-                                         "Фильтр по ценам", costs, parent=parent)
+        super(CostFilterDialog, self).__init__(user_id, table, "ui/filter_by_costs_dialog.ui",
+                                               "Фильтр по ценам", costs, parent=parent)
 
         self.cost_from.setRange(float(self.args[0]), float(self.args[-1]))
         self.cost_from.setValue(float(self.args[0]))
@@ -284,13 +286,13 @@ class CostFilter(FilterDialog):
         self.exit()
 
 
-class SignInWindow(QDialog):
+class SignInDialog(QDialog):
     def __init__(self, parent=None):
-        super(SignInWindow, self).__init__(parent)
+        super(SignInDialog, self).__init__(parent)
 
         self.con = sqlite3.connect("Cost.db")
 
-        uic.loadUi("ui/sign_in_window.ui", self)
+        uic.loadUi("ui/sign_in_dialog.ui", self)
         self.setWindowTitle("Вход в аккаунт")
 
         self.button_sign_in.clicked.connect(self.signIn)
@@ -334,13 +336,13 @@ WHERE Login = "{login}"''').fetchone()
         change_border(widget, color)
 
 
-class SignUpWindow(QDialog):
+class SignUpDialog(QDialog):
     def __init__(self, parent=None):
-        super(SignUpWindow, self).__init__(parent)
+        super(SignUpDialog, self).__init__(parent)
 
         self.con = sqlite3.connect("Cost.db")
 
-        uic.loadUi("ui/sign_up_window.ui", self)
+        uic.loadUi("ui/sign_up_dialog.ui", self)
         self.setWindowTitle("Регистрация аккаунта")
 
         self.button_sign_up.clicked.connect(self.signUp)
@@ -384,3 +386,7 @@ WHERE Login = "{login}"''').fetchone()[0]
     def error_handler(self, error, widget, color):
         self.status.setText(f"{error}")
         change_border(widget, color)
+
+
+class GraphWidget(graph_widget.GraphWidget):
+    pass
