@@ -266,7 +266,7 @@ class Window(QMainWindow):
         sign_in_form.exec_()
 
         # показываем виджет графика
-        self.graph = GraphWidget(self.graph_widget)
+        self.graph = GraphWidget(self.user_id, self.graph_widget)
         self.graph.show()
 
         # присваеваим таблицу с удаленными значениями
@@ -284,7 +284,7 @@ class Window(QMainWindow):
         sign_up_form.exec_()
 
         # показываем виджет графика
-        self.graph = GraphWidget(self.graph_widget)
+        self.graph = GraphWidget(self.user_id, self.graph_widget)
         self.graph.show()
 
         # очищаем таблицу

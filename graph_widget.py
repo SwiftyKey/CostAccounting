@@ -1,5 +1,4 @@
-import sys
-from PyQt5.QtWidgets import QWidget, QApplication, QListWidgetItem, QLabel, QDateEdit
+from PyQt5.QtWidgets import QWidget, QListWidgetItem, QLabel
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from PyQt5.QtCore import Qt, QDate
 import matplotlib.pyplot as plt
@@ -80,10 +79,10 @@ def do_data_to_format_pie_graph(data):
 
 
 class GraphWidget(QWidget):
-    def __init__(self, userId, parent=None):
+    def __init__(self, user_id, parent=None):
         super(GraphWidget, self).__init__(parent)
 
-        self.userId = userId
+        self.userId = user_id
 
         uic.loadUi('ui/graph_widget.ui', self)
 
@@ -112,9 +111,9 @@ class GraphWidget(QWidget):
             item.setCheckState(Qt.Checked)
             self.listWidget.addItem(item)
 
-        self.first_date_year, self.first_date_month, self.first_date_day, \
-        self.last_date_year, self.last_date_month, self.last_date_day, \
-        self.index_diagram, self.list_categories = None, None, None, None, None, None, None, None
+        self.first_date_year, self.first_date_month, self.first_date_day = None, None, None
+        self.last_date_year, self.last_date_month, self.last_date_day = None, None, None
+        self.index_diagram, self.list_categories = None, None
 
         self.dateEdit.setMaximumDate(QDate.currentDate())
         self.dateEdit_2.setMaximumDate(QDate.currentDate())
@@ -126,13 +125,6 @@ class GraphWidget(QWidget):
             self.dateEdit_2.setDate(QDate(int(day), int(month), int(year)))
         else:
             self.dateEdit_2.setDate(QDate.currentDate())
-        self.pushButton.clicked.connect(self.plot)
-
-    def plot(self):  # функция для построения НЕОБХОДИМОЙ нам диаграммы
-        self.first_date_year, self.first_date_month, self.first_date_day, \
-            self.last_date_year, self.last_date_month, self.last_date_day, \
-            self.index_diagram, self.list_categories = self.get_users_data()  # получаем все нужные
-        # данные для построения диаграмм
 
         self.pushButton.clicked.connect(self.plot)
 
@@ -142,9 +134,10 @@ class GraphWidget(QWidget):
     # функция для построения НЕОБХОДИМОЙ нам диаграммы
     def plot(self):
         # получаем все нужные данные для построения диаграмм
-        self.first_date_year, self.first_date_month, self.first_date_day, self.last_date_year, \
-            self.last_date_month, self.last_date_day, self.index_diagram, self.list_categories = \
-            self.get_users_data()
+        user_data = self.get_users_data()
+        self.first_date_year, self.first_date_month, self.first_date_day = user_data[:3]
+        self.last_date_year, self.last_date_month, self.last_date_day = user_data[3:6]
+        self.index_diagram, self.list_categories = user_data[6:]
 
         if self.index_diagram == 0:
             self.build_pie_plot()
@@ -307,11 +300,11 @@ class GraphWidget(QWidget):
         last_date = self.dateEdit_2.date()  # возвращает объект типа QDate
 
         diagram = self.comboBox.currentIndex()  # индекс графика
+        # раскладываем даты на три составляющих для дальнейших операций с ними
 
-        return first_date.year(), first_date.month(), first_date.day(), \
-            last_date.year(), last_date.month(), last_date.day(), \
-            diagram, list_categories  # раскладываем даты на три составляющих
-        # для дальнейших операций с ними
+        result = [first_date.year(), first_date.month(), first_date.day(),
+                  last_date.year(), last_date.month(), last_date.day(), diagram, list_categories]
+        return result
 
     def find_min_date(self):
         cur = self.con.cursor()
@@ -328,15 +321,3 @@ class GraphWidget(QWidget):
 
     def set_id(self, user_id):
         self.userId = user_id
-
-
-def except_hook(cls, exception, traceback):
-    sys.__excepthook__(cls, exception, traceback)
-
-
-if __name__ == '__main__':
-    app = QApplication(sys.argv)
-    main = GraphWidget()
-    main.show()
-    sys.excepthook = except_hook
-    sys.exit(app.exec_())
