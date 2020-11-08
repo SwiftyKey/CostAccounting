@@ -25,13 +25,13 @@ def list_dates_to_format(dates):
         for j in range(len(dates[i])):
             year, month, day = list(map(int, dates[i][j].split('-')))
             dates[i][j] = date(year, month, day).strftime("%d.%m.%Y")
+
     return dates
 
 
 # функция форматирования строки для создания круговой диаграммы
 def format_string(pct, number):
-    absolute = int(pct / 100. * np.sum(number))
-    return "{:d} руб.\n({:.1f}%)".format(absolute, pct)
+    return "{:d} руб.\n({:.1f}%)".format(int(pct / 100. * np.sum(number)), pct)
 
 
 # функция приведения полученных данных к удобному виду для построения столбчатой диаграммы и графика
@@ -65,7 +65,6 @@ def do_data_to_format_bar_and_plot_graph(data, labels, dates):
 
         format_list.append((sorted_data, sorted_dates, labels[i]))
 
-    # возвращает еще все даты
     return format_list, all_dates
 
 
@@ -75,6 +74,7 @@ def do_data_to_format_pie_graph(data):
 
     for i in range(len(data)):
         format_data.append(sum(data[i]))
+
     return format_data
 
 
@@ -131,7 +131,7 @@ class GraphWidget(QWidget):
     def __del__(self):
         self.con.close()
 
-    # функция для построения НЕОБХОДИМОЙ нам диаграммы
+    # метод для построения НЕОБХОДИМОЙ нам диаграммы
     def plot(self):
         # получаем все нужные данные для построения диаграмм
         user_data = self.get_users_data()
@@ -146,11 +146,11 @@ class GraphWidget(QWidget):
         else:
             self.build_bar_plot()
 
-    # функция для очистки поля для построения графиков
+    # метод для очистки поля для построения графиков
     def clear(self):
         self.figure.clear()
 
-    # функция для построения круговой диаграммы
+    # метод для построения круговой диаграммы
     def build_pie_plot(self):
         self.clear()
 
@@ -178,7 +178,7 @@ class GraphWidget(QWidget):
                                                 "убедитесь, что данные"
                                                 " введены верно и повторите запрос.")
 
-    # функция для построения столбчатой диаграммы
+    # метод для построения столбчатой диаграммы
     def build_bar_plot(self):
         self.clear()
 
@@ -214,7 +214,7 @@ class GraphWidget(QWidget):
                                                 "убедитесь, что данные введены "
                                                 "верно и повторите запрос.")
 
-    # функция для построения графика
+    # метод для построения графика
     def build_plot(self):
         self.clear()
 
@@ -245,7 +245,7 @@ class GraphWidget(QWidget):
                                                 "убедитесь, что данные введены"
                                                 " верно и повторите запрос.")
 
-    # функция для нахождения суммы расходов по категориям
+    # метод для нахождения суммы расходов по категориям
     def find_information_for_graph(self):
         first_date = date(self.first_date_year, self.first_date_month, self.first_date_day).strftime(
             "%Y-%m-%d")
@@ -287,7 +287,7 @@ class GraphWidget(QWidget):
 
         return data, labels, dates
 
-    # функция для получения необходимой для нас информации для построения диаграммы
+    # метод для получения необходимой для нас информации для построения диаграммы
     def get_users_data(self):
         list_categories = []
 
@@ -306,6 +306,7 @@ class GraphWidget(QWidget):
                   last_date.year(), last_date.month(), last_date.day(), diagram, list_categories]
         return result
 
+    # метод для нахождения минимальной даты в записях
     def find_min_date(self):
         cur = self.con.cursor()
         min_date = cur.execute("SELECT MIN (Date) FROM COST WHERE UserId = ?",
@@ -316,8 +317,10 @@ class GraphWidget(QWidget):
         else:
             return None
 
+    # метод для получения id пользователя
     def get_id(self):
         return self.userId
 
+    # метод для присваиваня нового id пользователя
     def set_id(self, user_id):
         self.userId = user_id

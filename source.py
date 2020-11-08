@@ -49,10 +49,11 @@ class Window(QMainWindow):
     def __del__(self):
         self.con.close()
 
-    # функция для получения данных в таблицу из базы данных
+    # метод для получения данных в таблицу из базы данных
     def getDataFromDb(self):
         # проверка на то, что пользователь вошел в аккаунт
         if self.user_id:
+            # получаем из базы данных все записи пользователя
             cur = self.con.cursor()
             result = cur.execute(f'''SELECT Title, Date, SumCost FROM Cost INNER JOIN Category ON 
     Cost.CategoryId = Category.CategoryId WHERE UserId = {self.user_id}''').fetchall()
@@ -62,11 +63,11 @@ class Window(QMainWindow):
         else:
             return []
 
-    # функция для присваивания таблицы новых значений
+    # метод для присваивания таблицы новых значений
     def setTable(self, new_table):
         self.table = new_table
 
-    # функция для отображения таблицы в виджете
+    # метод для отображения таблицы в виджете
     def showNotes(self):
         self.tableWidget.setRowCount(len(self.table))
 
@@ -77,7 +78,7 @@ class Window(QMainWindow):
                     value = '.'.join(value.split('-')[::-1])
                 self.tableWidget.setItem(i, j, QTableWidgetItem(str(value)))
 
-    # функция для добавления новой записи
+    # метод для добавления новой записи
     def add(self):
         # проверка на то, что пользователь еще не вошел в аккаунт
         if self.statusBarChange("Войдите в аккаунт, чтобы добавить запись", self.user_id is None):
@@ -91,7 +92,7 @@ class Window(QMainWindow):
         # отображаем новую таблицу
         self.showNotes()
 
-    # функция дял удаления записей
+    # метод дял удаления записей
     def remove(self):
         # проверка на то, что пользователь еще не вошел в аккаунт
         if self.statusBarChange("Войдите в аккаунт, чтобы удалить запись", self.user_id is None):
@@ -109,7 +110,7 @@ class Window(QMainWindow):
             valid = QMessageBox.question(
                 self, '', "Действительно удалить записи с номерами " +
                           ", ".join(str(selected_item + 1) for selected_item
-                                    in sorted(list(set(map(lambda i: i.selected_item(),
+                                    in sorted(list(set(map(lambda i: i.row(),
                                                            selected_items)))))
                           + '?', QMessageBox.Yes, QMessageBox.No)
 
@@ -120,8 +121,10 @@ class Window(QMainWindow):
                 for selected_item in selected_items:
                     # получаем данные из выбранной ячейки
                     category, date, cost = self.table[selected_item.row()]
+                    # получаем id категории выбранной ячейки
                     category = cur.execute(f'''SELECT CategoryId FROM Category 
     WHERE Title = "{category}"''').fetchone()[0]
+                    # удаляем запись соответствующую выбранной ячейки
                     cur.execute(f'''DELETE FROM Cost 
     WHERE CategoryId={category} AND Date="{date}" AND SumCost={cost}''')
 
@@ -142,7 +145,7 @@ class Window(QMainWindow):
         else:
             return
 
-    # функция для редактирования записи
+    # метод для редактирования записи
     def edit(self):
         # проверка на то, что пользователь еще не вошел в аккаунт
         if self.statusBarChange("Войдите в аккаунт, чтобы изменить запись", self.user_id is None):
@@ -166,7 +169,7 @@ class Window(QMainWindow):
         # отображаем новую таблицу
         self.showNotes()
 
-    # функция для фильтрации по категориям
+    # метод для фильтрации по категориям
     def filterByCategories(self):
         # если пользователь нажал на фильтр, и он не был еще применен
         if self.filter_by_categories.isChecked():
@@ -189,7 +192,7 @@ class Window(QMainWindow):
         else:
             self.setTable(self.getDataFromDb())
 
-    # функция для фильтрации по датам
+    # метод для фильтрации по датам
     def filterByDates(self):
         # если пользователь нажал на фильтр, и он не был еще применен
         if self.filter_by_dates.isChecked():
@@ -212,7 +215,7 @@ class Window(QMainWindow):
         else:
             self.setTable(self.getDataFromDb())
 
-    # функция для фильтрации по ценам
+    # метод для фильтрации по ценам
     def filterByCosts(self):
         # если пользователь нажал на фильтр, и он не был еще применен
         if self.filter_by_costs.isChecked():
@@ -235,7 +238,7 @@ class Window(QMainWindow):
         else:
             self.setTable(self.getDataFromDb())
 
-    # функция для сортировки записей в таблице
+    # метод для сортировки записей в таблице
     def sort(self, index):
         # проверка на то, что пользователь еще не вошел в аккаунт
         if self.statusBarChange("Войдите в аккаунт, для сортировки записей", self.user_id is None):
@@ -256,7 +259,7 @@ class Window(QMainWindow):
         # отображаем новую таблицу
         self.showNotes()
 
-    # функция для входа в аккаунт
+    # метод для входа в аккаунт
     def signIn(self):
         # проверка на то, что пользователь уже вошел в аккаунт
         if self.statusBarChange("Выйдите из аккаунта, чтобы войти в другой аккаунт", self.user_id):
@@ -274,7 +277,7 @@ class Window(QMainWindow):
         # отображаем новую таблицу
         self.showNotes()
 
-    # функция для регистрации нового аккаунта
+    # метод для регистрации нового аккаунта
     def signUp(self):
         # проверка на то, что пользователь уже вошел в аккаунт
         if self.statusBarChange("Выйдите из аккаунта, чтобы зарегистрироваться", self.user_id):
@@ -292,7 +295,7 @@ class Window(QMainWindow):
         # отображаем новую таблицу
         self.showNotes()
 
-    # функция для выхода из аккаунта
+    # метод для выхода из аккаунта
     def logOut(self):
         # проверка на то, что пользователь еще не вошел в аккаунт
         if self.statusBarChange("Нельзя выйти, так как вы не вошли в аккаунт", self.user_id is None):
@@ -309,7 +312,11 @@ class Window(QMainWindow):
 
         self.user_id = None
 
-    # функция для отображения ошибок в статус баре
+    # метод для присваивания id пользователя
+    def setUserId(self, user_id):
+        self.user_id = user_id
+
+    # метод для отображения ошибок в статус баре
     def statusBarChange(self, message, condition):
         if condition:
             # отображаем ошибку в статус баре
