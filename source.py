@@ -1,9 +1,8 @@
 import sqlite3
 import sys
 
-from widgets import NoteWindow, EditWindow, CategoryFilter, DateFilter, \
-    CostFilter, SignInWindow, SignUpWindow
-from GraphWidget import GraphWidget
+from widgets import AddNoteDialog, EditDialog, CategoryFilterDialog, DateFilterDialog, \
+    CostFilterDialog, SignInDialog, SignUpDialog, GraphWidget
 from PyQt5 import uic
 from PyQt5.QtWidgets import QApplication, QMainWindow, QTableWidgetItem, QMessageBox
 
@@ -79,7 +78,7 @@ class Window(QMainWindow):
         if self.statusBarChange("Войдите в аккаунт, чтобы добавить запись", self.user_id is None):
             return
 
-        new_note_form = NoteWindow(self.user_id, "", "", "", self)
+        new_note_form = AddNoteDialog(self.user_id, "", "", "", self)
         new_note_form.exec_()
 
         self.table = self.getTable()
@@ -133,23 +132,23 @@ class Window(QMainWindow):
 
         category, date, cost = self.table[selected_item[0].row()]
 
-        edit_form = EditWindow(self.user_id, category, date, cost, self)
+        edit_form = EditDialog(self.user_id, category, date, cost, self)
         edit_form.exec_()
 
         self.table = self.getTable()
         self.showNotes()
 
     def filterByCategories(self):
-        if self.statusBarChange("Войдите в аккаунт, чтобы отфильтровать записи",
-                                self.user_id is None):
-            return
-        if self.statusBarChange("Должна быть хотя бы одна запись", not len(self.table)):
-            return
-
         if self.filter_by_categories.isChecked():
+            if self.statusBarChange("Войдите в аккаунт, чтобы отфильтровать записи",
+                                    self.user_id is None):
+                return
+            if self.statusBarChange("Должна быть хотя бы одна запись", not len(self.table)):
+                return
+
             categories = sorted(list(set(map(lambda x: x[0], self.table))))
 
-            filter_form = CategoryFilter(self.user_id, self.table, categories, parent=self)
+            filter_form = CategoryFilterDialog(self.user_id, self.table, categories, parent=self)
             filter_form.exec_()
 
             self.showNotes()
@@ -166,7 +165,7 @@ class Window(QMainWindow):
 
             dates = sorted(list(set(map(lambda x: x[1], self.table))))
 
-            filter_form = DateFilter(self.user_id, self.table, dates, parent=self)
+            filter_form = DateFilterDialog(self.user_id, self.table, dates, parent=self)
             filter_form.exec_()
 
             self.showNotes()
@@ -183,7 +182,7 @@ class Window(QMainWindow):
 
             costs = sorted(list(set(map(lambda x: x[2], self.table))))
 
-            filter_form = CostFilter(self.user_id, self.table, costs, parent=self)
+            filter_form = CostFilterDialog(self.user_id, self.table, costs, parent=self)
             filter_form.exec_()
 
             self.showNotes()
@@ -196,14 +195,18 @@ class Window(QMainWindow):
         if self.statusBarChange("Записей должно быть больше одной", len(self.table) <= 1):
             return
 
-        self.table.sort(key=lambda note: note[index])
+        self.tableWidget.horizontalHeader().setSortIndicatorShown(True)
+        if not self.tableWidget.horizontalHeader().sortIndicatorOrder():
+            self.table.sort(key=lambda note: note[index])
+        else:
+            self.table.sort(key=lambda note: note[index], reverse=True)
         self.showNotes()
 
     def signIn(self):
         if self.statusBarChange("Выйдите из аккаунта, чтобы войти в другой аккаунт", self.user_id):
             return
 
-        sign_in_form = SignInWindow(self)
+        sign_in_form = SignInDialog(self)
         sign_in_form.exec_()
 
         self.showGraph()
@@ -215,7 +218,7 @@ class Window(QMainWindow):
         if self.statusBarChange("Выйдите из аккаунта, чтобы зарегистрироваться", self.user_id):
             return
 
-        sign_up_form = SignUpWindow(self)
+        sign_up_form = SignUpDialog(self)
         sign_up_form.exec_()
 
         self.showGraph()
@@ -227,6 +230,7 @@ class Window(QMainWindow):
         if self.statusBarChange("Нельзя выйти, так как вы не вошли в аккаунт", self.user_id is None):
             return
 
+        self.graph.clear()
         self.graph.hide()
 
         self.table.clear()

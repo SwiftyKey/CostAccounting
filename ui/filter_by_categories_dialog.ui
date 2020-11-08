@@ -28,7 +28,14 @@
     </widget>
    </item>
    <item>
-    <widget class="QListWidget" name="listWidget"/>
+    <widget class="QListWidget" name="listWidget">
+     <property name="font">
+      <font>
+       <family>Times New Roman</family>
+       <pointsize>14</pointsize>
+      </font>
+     </property>
+    </widget>
    </item>
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout">

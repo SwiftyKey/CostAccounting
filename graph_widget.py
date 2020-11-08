@@ -80,12 +80,12 @@ def do_data_to_format_pie_graph(data):
 
 
 class GraphWidget(QWidget):
-    def __init__(self, parent=None):
+    def __init__(self, userId, parent=None):
         super(GraphWidget, self).__init__(parent)
 
-        self.userId = None
+        self.userId = userId
 
-        uic.loadUi('ui/graph_window.ui', self)
+        uic.loadUi('ui/graph_widget.ui', self)
 
         self.figure = plt.figure()
 
@@ -130,8 +130,8 @@ class GraphWidget(QWidget):
 
     def plot(self):  # функция для построения НЕОБХОДИМОЙ нам диаграммы
         self.first_date_year, self.first_date_month, self.first_date_day, \
-        self.last_date_year, self.last_date_month, self.last_date_day, \
-        self.index_diagram, self.list_categories = self.get_users_data()  # получаем все нужные
+            self.last_date_year, self.last_date_month, self.last_date_day, \
+            self.index_diagram, self.list_categories = self.get_users_data()  # получаем все нужные
         # данные для построения диаграмм
 
         self.pushButton.clicked.connect(self.plot)
@@ -143,7 +143,7 @@ class GraphWidget(QWidget):
     def plot(self):
         # получаем все нужные данные для построения диаграмм
         self.first_date_year, self.first_date_month, self.first_date_day, self.last_date_year, \
-        self.last_date_month, self.last_date_day, self.index_diagram, self.list_categories = \
+            self.last_date_month, self.last_date_day, self.index_diagram, self.list_categories = \
             self.get_users_data()
 
         if self.index_diagram == 0:
@@ -153,9 +153,13 @@ class GraphWidget(QWidget):
         else:
             self.build_bar_plot()
 
+    # функция для очистки поля для построения графиков
+    def clear(self):
+        self.figure.clear()
+
     # функция для построения круговой диаграммы
     def build_pie_plot(self):
-        self.figure.clear()
+        self.clear()
 
         data, labels_graph, _ = self.find_information_for_graph()
         data = do_data_to_format_pie_graph(data)
@@ -176,14 +180,14 @@ class GraphWidget(QWidget):
             self.canvas.draw()
         # иначе выводим надпись о том, что не найдены данные, удовлетворяющие запросу
         else:
-            self.figure.clear()
+            self.clear()
             self.label_if_not_found_inf.setText("Не было найдено информации, "
                                                 "убедитесь, что данные"
                                                 " введены верно и повторите запрос.")
 
     # функция для построения столбчатой диаграммы
     def build_bar_plot(self):
-        self.figure.clear()
+        self.clear()
 
         data, labels_graph, dates = self.find_information_for_graph()
         data_to_build_graph, all_dates = \
@@ -219,7 +223,7 @@ class GraphWidget(QWidget):
 
     # функция для построения графика
     def build_plot(self):
-        self.figure.clear()
+        self.clear()
 
         data, labels_graph, data_to_build_graph = self.find_information_for_graph()
 
