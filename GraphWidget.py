@@ -1,5 +1,5 @@
 import sys
-from PyQt5.QtWidgets import QWidget, QApplication, QListWidgetItem, QLabel
+from PyQt5.QtWidgets import QWidget, QApplication, QListWidgetItem, QLabel, QDateEdit
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from PyQt5.QtCore import Qt, QDate
 import matplotlib.pyplot as plt
@@ -98,9 +98,6 @@ class GraphWidget(QWidget):
         self.verticalLayout_3.addWidget(self.canvas)
         self.verticalLayout_3.addWidget(self.label_if_not_found_inf)
 
-        self.dateEdit.setMinimumDate(QDate.currentDate())
-        self.dateEdit_2.setMinimumDate(QDate.currentDate())
-
         self.con = sqlite3.connect('Cost.db')
         cur = self.con.cursor()
         iterations = cur.execute('SELECT title FROM Category').fetchall()
@@ -116,15 +113,25 @@ class GraphWidget(QWidget):
             self.listWidget.addItem(item)
 
         self.first_date_year, self.first_date_month, self.first_date_day, \
-            self.last_date_year, self.last_date_month, self.last_date_day, \
-            self.index_diagram, self.list_categories = None, None, None, None, None, None, None, None
+        self.last_date_year, self.last_date_month, self.last_date_day, \
+        self.index_diagram, self.list_categories = None, None, None, None, None, None, None, None
 
+        self.dateEdit.setMaximumDate(QDate.currentDate())
+        self.dateEdit_2.setMaximumDate(QDate.currentDate())
+
+        self.dateEdit_2.setDate(QDate.currentDate())
+
+        if self.find_min_date():
+            year, day, month = self.find_min_date()
+            self.dateEdit_2.setDate(QDate(int(day), int(month), int(year)))
+        else:
+            self.dateEdit_2.setDate(QDate.currentDate())
         self.pushButton.clicked.connect(self.plot)
 
     def plot(self):  # функция для построения НЕОБХОДИМОЙ нам диаграммы
         self.first_date_year, self.first_date_month, self.first_date_day, \
-            self.last_date_year, self.last_date_month, self.last_date_day, \
-            self.index_diagram, self.list_categories = self.get_users_data()  # получаем все нужные
+        self.last_date_year, self.last_date_month, self.last_date_day, \
+        self.index_diagram, self.list_categories = self.get_users_data()  # получаем все нужные
         # данные для построения диаграмм
 
         self.pushButton.clicked.connect(self.plot)
@@ -136,7 +143,7 @@ class GraphWidget(QWidget):
     def plot(self):
         # получаем все нужные данные для построения диаграмм
         self.first_date_year, self.first_date_month, self.first_date_day, self.last_date_year, \
-            self.last_date_month, self.last_date_day, self.index_diagram, self.list_categories = \
+        self.last_date_month, self.last_date_day, self.index_diagram, self.list_categories = \
             self.get_users_data()
 
         if self.index_diagram == 0:
@@ -298,9 +305,19 @@ class GraphWidget(QWidget):
         diagram = self.comboBox.currentIndex()  # индекс графика
 
         return first_date.year(), first_date.month(), first_date.day(), \
-               last_date.year(), last_date.month(), last_date.day(), \
-               diagram, list_categories  # раскладываем даты на три составляющих
+            last_date.year(), last_date.month(), last_date.day(), \
+            diagram, list_categories  # раскладываем даты на три составляющих
         # для дальнейших операций с ними
+
+    def find_min_date(self):
+        cur = self.con.cursor()
+        min_date = cur.execute("SELECT MIN (Date) FROM COST WHERE UserId = ?",
+                               (self.userId,)).fetchone()[0]
+        if min_date:
+            year, month, day = min_date.split('-')
+            return year, month, day
+        else:
+            return None
 
     def get_id(self):
         return self.userId
