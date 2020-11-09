@@ -82,7 +82,7 @@ class GraphWidget(QWidget):
     def __init__(self, user_id, parent=None):
         super(GraphWidget, self).__init__(parent)
 
-        self.userId = user_id
+        self.user_id = user_id
 
         uic.loadUi('ui/graph_widget.ui', self)
 
@@ -310,7 +310,7 @@ class GraphWidget(QWidget):
     def find_min_date(self):
         cur = self.con.cursor()
         min_date = cur.execute("SELECT MIN (Date) FROM COST WHERE UserId = ?",
-                               (self.userId,)).fetchone()[0]
+                               (self.get_id(),)).fetchone()[0]
         if min_date:
             year, month, day = min_date.split('-')
             return year, month, day
