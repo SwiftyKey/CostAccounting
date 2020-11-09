@@ -181,7 +181,7 @@ class OperationsDialog(QDialog):
 class AddNoteDialog(OperationsDialog):
     def __init__(self, user_id, category, date, cost, parent=None):
         super(AddNoteDialog, self).__init__(user_id, category, date, cost,
-                                            "ui/addNote_dialog.ui", "Новая запись", parent)
+                                            "ui/add_note_dialog.ui", "Новая запись", parent)
 
         self.button_add.clicked.connect(self.addNote)
 
