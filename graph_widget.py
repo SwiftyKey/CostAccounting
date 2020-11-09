@@ -319,8 +319,8 @@ class GraphWidget(QWidget):
 
     # метод для получения id пользователя
     def get_id(self):
-        return self.userId
+        return self.user_id
 
     # метод для присваиваня нового id пользователя
     def set_id(self, user_id):
-        self.userId = user_id
+        self.user_id = user_id
