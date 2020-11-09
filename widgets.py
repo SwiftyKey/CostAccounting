@@ -31,7 +31,7 @@ def hash_password(password):
 
 
 # функция для сравнения введенного пароля пользователем и пароля в базе данных
-def check_password(hashed_password, user_password):
+def checkPassword(hashed_password, user_password):
     password, salt = hashed_password.split(':')
     return password == hashlib.sha256(salt.encode() + user_password.encode()).hexdigest()
 
@@ -72,22 +72,22 @@ class IsCorrectPassword:
         self.password = password
 
     # метод для проверки длины пароля
-    def is_valid_length(self):
+    def isValidLength(self):
         return len(self.password) > LENGTH
 
     # метод для проверки на наличие разных регистров символов в пароле
-    def is_valid_registers(self):
+    def isValidRegisters(self):
         return self.password != self.password.lower() and self.password != self.password.upper()
 
     # метод для проверки на наличие цифры в пароле
-    def contains_digit(self):
+    def containsDigit(self):
         for digit in DIGITS:
             if digit in self.password:
                 return True
         return False
 
     # метод для проверки на отсутствие в пароле запрещенных последовательностей
-    def is_valid_sequences(self):
+    def isValidSequences(self):
         for index, sym in enumerate(self.password):
             for sequence in SEQUENCES:
                 # если символ есть в одной из запрещенных последовательностей
@@ -104,14 +104,14 @@ class IsCorrectPassword:
         return True
 
     # метод для проверки пароля на корректность
-    def check_password(self):
-        if not self.is_valid_length():
+    def checkPassword(self):
+        if not self.isValidLength():
             raise LengthError(f"Длина пароля <= {LENGTH}")
-        if not self.is_valid_registers():
+        if not self.isValidRegisters():
             raise LetterError("В пароле символы одного регистра")
-        if not self.contains_digit():
+        if not self.containsDigit():
             raise DigitError("В пароле не содержится цифра")
-        if not self.is_valid_sequences():
+        if not self.isValidSequences():
             raise SequenceError("В пароле есть последовательность из символов на клавиатуре")
 
         return True
@@ -146,7 +146,7 @@ class OperationsDialog(QDialog):
         year, month, day = today.year, today.month, today.day
         self.select_date.setDate(QDate(year, month, day))
 
-        self.button_create_category.clicked.connect(self.new_category)
+        self.button_create_category.clicked.connect(self.newCategory)
         self.button_exit.clicked.connect(self.exit)
 
     # метод для отображения ui диалога
@@ -155,7 +155,7 @@ class OperationsDialog(QDialog):
         self.setWindowTitle(title)
 
     # метод для добавления новой категории
-    def new_category(self):
+    def newCategory(self):
         # создаем диалог ввода названия новой категории
         title = QInputDialog.getText(self, "Новая категория",
                                      "Введите название новой категории")
@@ -181,12 +181,12 @@ class OperationsDialog(QDialog):
 class AddNoteDialog(OperationsDialog):
     def __init__(self, user_id, category, date, cost, parent=None):
         super(AddNoteDialog, self).__init__(user_id, category, date, cost,
-                                            "ui/add_note_dialog.ui", "Новая запись", parent)
+                                            "ui/addNote_dialog.ui", "Новая запись", parent)
 
-        self.button_add.clicked.connect(self.add_note)
+        self.button_add.clicked.connect(self.addNote)
 
     # метод для добавления записи
-    def add_note(self):
+    def addNote(self):
         cur = self.con.cursor()
         # получаем id категории из базы данных
         self.category = cur.execute(f'''SELECT CategoryId FROM Category 
@@ -199,15 +199,22 @@ WHERE Title = "{self.select_category.currentText()}"''').fetchone()[0]
 VALUES({self.user_id}, {self.category}, "{self.date}", {self.cost})''')
         cur.close()
         self.con.commit()
+        # добавляем запись в таблицу
+        self.parent().setTable(self.parent().getTable() + [(self.select_category.currentText(),
+                                                            self.date, int(self.cost)
+                                                            if self.cost.is_integer()
+                                                            else self.cost)])
 
         self.exit()
 
 
 # класс предок изменеия выбранной записи
 class EditDialog(OperationsDialog):
-    def __init__(self, user_id, category, date, cost, parent=None):
+    def __init__(self, user_id, category, date, cost, row, parent=None):
         super(EditDialog, self).__init__(user_id, category, date, cost,
                                          "ui/edit_dialog.ui", "Изменение записи", parent)
+
+        self.row = row
 
         # устанавливаем данные для изменения в виджеты диалога
         self.select_category.setCurrentText(self.category)
@@ -215,10 +222,10 @@ class EditDialog(OperationsDialog):
         year, month, day = list(map(int, self.date.split('-')))
         self.select_date.setDate(QDate(year, month, day))
 
-        self.button_edit.clicked.connect(self.edit_note)
+        self.button_edit.clicked.connect(self.editNote)
 
     # метод для изменения выбранной записи
-    def edit_note(self):
+    def editNote(self):
         cur = self.con.cursor()
         # получаем id категории из базы данных
         self.category = cur.execute(f'''SELECT CategoryId FROM Category 
@@ -239,6 +246,13 @@ AND Date="{self.date}" AND SumCost={self.cost}''').fetchone()[0]
             # изменяем запись базе данных
             cur.execute(f'''UPDATE Cost SET UserId={self.user_id}, 
 CategoryId={category}, Date="{date}", SumCost={cost} WHERE CostId={cost_id}''')
+            # изменяем запись в таблице
+            table = self.parent().getTable()
+            del table[self.row]
+            category = cur.execute(f'''SELECT Title FROM Category 
+WHERE CategoryId={category}''').fetchone()[0]
+            table.insert(self.row, (category, date, cost))
+            self.parent().setTable(table)
         cur.close()
         self.con.commit()
 
@@ -257,7 +271,7 @@ class FilterDialog(QDialog):
         # загружаем ui диалога
         self.loadUI(filename, title)
 
-        self.button_filter.clicked.connect(self.filter_out)
+        self.button_filter.clicked.connect(self.filterOut)
         self.button_exit.clicked.connect(self.exit)
 
     # метод для отображения ui диалога
@@ -266,7 +280,7 @@ class FilterDialog(QDialog):
         self.setWindowTitle(title)
 
     # метод фильтрации
-    def filter_out(self):
+    def filterOut(self):
         pass
 
     # метод для отмены фильтрации записей
@@ -287,7 +301,7 @@ class CategoryFilterDialog(FilterDialog):
             self.listWidget.addItem(item)
 
     # метод фильтрации
-    def filter_out(self):
+    def filterOut(self):
         categories_checked = []
         for i in range(self.listWidget.count()):
             list_item = self.listWidget.item(i)
@@ -296,7 +310,10 @@ class CategoryFilterDialog(FilterDialog):
                 categories_checked.append(list_item.text())
 
         # присваеваим отфильтрованную таблицу
-        self.parent().setTable(list(filter(lambda x: x[0] in categories_checked, self.table)))
+        self.parent().setFilteredTable(list(filter(lambda x: x[0] in categories_checked,
+                                                   self.table)))
+        # устанавливаем параметр фильтрации
+        self.parent().setFilterParameter("by_categories", lambda x: x[0] in categories_checked)
 
         self.exit()
 
@@ -315,12 +332,15 @@ class DateFilterDialog(FilterDialog):
         year_to, month_to, day_to = list(map(int, self.args[-1].split('-')))
         self.date_to.setDate(QDate(year_to, month_to, day_to))
 
-    def filter_out(self):
+    def filterOut(self):
         date_from = self.date_from.date().toString("yyyy-MM-dd")
         date_to = self.date_to.date().toString("yyyy-MM-dd")
 
         # присваеваим отфильтрованную таблицу
-        self.parent().setTable(list(filter(lambda x: date_from <= x[1] <= date_to, self.table)))
+        self.parent().setFilteredTable(list(filter(lambda x: date_from <= x[1] <= date_to,
+                                                   self.table)))
+        # устанавливаем параметр фильтрации
+        self.parent().setFilterParameter("by_dates", lambda x: date_from <= x[1] <= date_to)
 
         self.exit()
 
@@ -339,12 +359,15 @@ class CostFilterDialog(FilterDialog):
         # устанавливаем максимальную цену
         self.cost_to.setValue(float(self.args[-1]))
 
-    def filter_out(self):
+    def filterOut(self):
         cost_from = self.cost_from.value()
         cost_to = self.cost_to.value()
 
         # присваеваим отфильтрованную таблицу
-        self.parent().setTable(list(filter(lambda x: cost_from <= x[2] <= cost_to, self.table)))
+        self.parent().setFilteredTable(list(filter(lambda x: cost_from <= x[2] <= cost_to,
+                                                   self.table)))
+        # устанавливаем параметр фильтрации
+        self.parent().setFilterParameter("by_dates", lambda x: cost_from <= x[2] <= cost_to)
 
         self.exit()
 
@@ -380,7 +403,7 @@ WHERE Login = "{login}"''').fetchone()
             # если список пуст, сообщаем, что пользователь ввел неверный логин
             if result:
                 # если пароль не верный, сообщаем, что пользователь ввел неверный пароль
-                if check_password(result[1], password):
+                if checkPassword(result[1], password):
                     # присваиваем id пользователя
                     self.parent().setUserId(result[0])
                     change_border(self.input_login, "black")
@@ -390,10 +413,10 @@ WHERE Login = "{login}"''').fetchone()
             else:
                 raise LoginError("Неправильный логин")
         except LoginError as error:
-            self.error_handler(error, self.input_login, "red")
+            self.errorHandler(error, self.input_login, "red")
             return
         except PasswordError as error:
-            self.error_handler(error, self.input_password, "red")
+            self.errorHandler(error, self.input_password, "red")
             return
 
         cur.close()
@@ -401,7 +424,7 @@ WHERE Login = "{login}"''').fetchone()
         self.close()
 
     # метод отображения ошибок ввода
-    def error_handler(self, error, widget, color):
+    def errorHandler(self, error, widget, color):
         self.status.setText(f"{error}")
         change_border(widget, color)
 
@@ -437,17 +460,17 @@ class SignUpDialog(QDialog):
 
             # если пароль корректен, добавляем нового пользователя в базу данных
             # иначе сообщаем пользователю где он ошибся
-            if password.check_password():
+            if password.checkPassword():
                 #
                 cur.execute(f'''INSERT INTO USER(Login, Password) 
 VALUES("{login}", "{hash_password(password.password)}")''')
                 change_border(self.input_password, "black")
                 change_border(self.input_login, "black")
         except LoginError as error:
-            self.error_handler(error, self.input_login, "red")
+            self.errorHandler(error, self.input_login, "red")
             return
         except PasswordError as error:
-            self.error_handler(error, self.input_password, "red")
+            self.errorHandler(error, self.input_password, "red")
             return
 
         self.con.commit()
@@ -460,7 +483,7 @@ WHERE Login = "{login}"''').fetchone()[0]
         self.close()
 
     # метод отображения ошибок ввода
-    def error_handler(self, error, widget, color):
+    def errorHandler(self, error, widget, color):
         self.status.setText(f"{error}")
         change_border(widget, color)
 

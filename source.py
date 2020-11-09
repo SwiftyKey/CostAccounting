@@ -21,6 +21,11 @@ class Window(QMainWindow):
 
         self.title = ["Категория", "Дата", "Цена"]
         self.table = []
+        self.filtered_table = []
+
+        self.filter_parameter_by_categories = None
+        self.filter_parameter_by_dates = None
+        self.filter_parameter_by_costs = None
 
         uic.loadUi("ui/main_window.ui", self)
 
@@ -30,7 +35,7 @@ class Window(QMainWindow):
         self.tableWidget.setColumnCount(len(self.title))
         self.tableWidget.setHorizontalHeaderLabels(self.title)
 
-        self.showNotes()
+        self.showNotes(self.table)
 
         self.operation_add.triggered.connect(self.add)
         self.operation_edit.triggered.connect(self.edit)
@@ -67,11 +72,45 @@ class Window(QMainWindow):
     def setTable(self, new_table):
         self.table = new_table
 
-    # метод для отображения таблицы в виджете
-    def showNotes(self):
-        self.tableWidget.setRowCount(len(self.table))
+    # метод для присваивания отфильтрованной таблицы новых значений
+    def setFilteredTable(self, filtered_table):
+        self.filtered_table = filtered_table
 
-        for i, row in enumerate(self.table):
+    # метод для присваивания параметра фильтрации
+    def setFilterParameter(self, filter_name, parameter):
+        if filter_name == "by_categories":
+            self.filter_parameter_by_categories = parameter
+        elif filter_name == "by_dates":
+            self.filter_parameter_by_dates = parameter
+        elif filter_name == "by_costs":
+            self.filter_parameter_by_costs = parameter
+
+    # метод для получения таблицы данных
+    def getTable(self):
+        return self.table
+
+    # метод для получения данных отфильтрованной таблицы
+    def getFilteredTable(self):
+        return self.filtered_table
+
+    # метод для получения параметра фильтрации
+    def getFilterParameter(self, filter_name):
+        filter_by = ""
+
+        if filter_name == "by_categories":
+            filter_by = self.filter_by_categories
+        elif filter_name == "by_dates":
+            filter_by = self.filter_by_dates
+        elif filter_name == "by_costs":
+            filter_by = self.filter_by_costs
+
+        return filter_by
+
+    # метод для отображения таблицы в виджете
+    def showNotes(self, table):
+        self.tableWidget.setRowCount(len(table))
+
+        for i, row in enumerate(table):
             for j, value in enumerate(row):
                 # меняем формат представления даты
                 if j == 1:
@@ -87,10 +126,8 @@ class Window(QMainWindow):
         new_note_form = AddNoteDialog(self.user_id, "", "", "", self)
         new_note_form.exec_()
 
-        # присваеваим таблицу с удаленными значениями
-        self.setTable(self.getDataFromDb())
         # отображаем новую таблицу
-        self.showNotes()
+        self.showNotes(self.table)
 
     # метод дял удаления записей
     def remove(self):
@@ -120,13 +157,14 @@ class Window(QMainWindow):
 
                 for selected_item in selected_items:
                     # получаем данные из выбранной ячейки
-                    category, date, cost = self.table[selected_item.row()]
+                    category, date, cost = self.getTable()[selected_item.row()]
                     # получаем id категории выбранной ячейки
                     category = cur.execute(f'''SELECT CategoryId FROM Category 
     WHERE Title = "{category}"''').fetchone()[0]
                     # удаляем запись соответствующую выбранной ячейки
                     cur.execute(f'''DELETE FROM Cost 
     WHERE CategoryId={category} AND Date="{date}" AND SumCost={cost}''')
+                    del self.table[selected_item.row()]
 
                 # говорим пользователю, что все успешно удалилось
                 self.statusBar().showMessage("Записи с номерами "
@@ -138,10 +176,8 @@ class Window(QMainWindow):
                 cur.close()
                 self.con.commit()
 
-                # присваеваим таблицу с удаленными значениями
-                self.setTable(self.getDataFromDb())
                 # отображаем новую таблицу
-                self.showNotes()
+                self.showNotes(self.table)
         else:
             return
 
@@ -159,84 +195,69 @@ class Window(QMainWindow):
             return
 
         # получаем данные из выбранной ячейки
-        category, date, cost = self.table[selected_item[0].row()]
+        row = selected_item[0].row()
+        category, date, cost = self.getTable()[row]
 
-        edit_form = EditDialog(self.user_id, category, date, cost, self)
+        edit_form = EditDialog(self.user_id, category, date, cost, row, self)
         edit_form.exec_()
 
-        # присваеваим таблицу с удаленными значениями
-        self.setTable(self.getDataFromDb())
         # отображаем новую таблицу
-        self.showNotes()
+        self.showNotes(self.table)
+
+    # общий метод фильтрации
+    def filter_(self, filter_obj, filter_dialog, index):
+        # если пользователь нажал на фильтр, и он не был еще применен
+        if filter_obj.isChecked():
+            # проверка на то, что пользователь еще не вошел в аккаунт
+            if self.statusBarChange("Войдите в аккаунт, чтобы отфильтровать записи",
+                                    self.user_id is None):
+                return
+            # проверка на то, что записей в таблице не меньше одной
+            if self.statusBarChange("Должна быть хотя бы одна запись", not len(self.table)):
+                return
+
+            # создаем таблицу для фильтрации
+            self.setFilteredTable(self.getTable())
+
+            # получаем все данные, которые выбирал пользователь
+            args = sorted(list(set(map(lambda x: x[index], self.getFilteredTable()))))
+
+            filter_form = filter_dialog(self.user_id, self.getFilteredTable(), args, parent=self)
+            filter_form.exec_()
+
+            # отображаем новую таблицу
+            self.showNotes(self.getFilteredTable())
+        else:
+            self.setFilteredTable(self.getTable())
+
+            if not (self.filter_by_categories.isChecked() or self.filter_by_dates.isChecked()
+                    or self.filter_by_costs.isChecked()):
+
+                self.showNotes(self.getTable())
+            else:
+                if self.filter_by_categories.isChecked():
+                    self.setFilteredTable(list(filter(self.getFilterParameter("by_categories"),
+                                                      self.getFilteredTable())))
+                if self.filter_by_dates.isChecked():
+                    self.setFilteredTable(list(filter(self.getFilterParameter("by_dates"),
+                                                      self.getFilteredTable())))
+                if self.filter_by_costs.isChecked():
+                    self.setFilteredTable(list(filter(self.getFilterParameter("by_costs"),
+                                                      self.getFilteredTable())))
+
+                self.showNotes(self.getFilteredTable())
 
     # метод для фильтрации по категориям
     def filterByCategories(self):
-        # если пользователь нажал на фильтр, и он не был еще применен
-        if self.filter_by_categories.isChecked():
-            # проверка на то, что пользователь еще не вошел в аккаунт
-            if self.statusBarChange("Войдите в аккаунт, чтобы отфильтровать записи",
-                                    self.user_id is None):
-                return
-            # проверка на то, что записей в таблице не меньше одной
-            if self.statusBarChange("Должна быть хотя бы одна запись", not len(self.table)):
-                return
-
-            # получаем все категории, которые выбирал пользователь
-            categories = sorted(list(set(map(lambda x: x[0], self.table))))
-
-            filter_form = CategoryFilterDialog(self.user_id, self.table, categories, parent=self)
-            filter_form.exec_()
-
-            # отображаем новую таблицу
-            self.showNotes()
-        else:
-            self.setTable(self.getDataFromDb())
+        self.filter_(self.filter_by_categories, CategoryFilterDialog, 0)
 
     # метод для фильтрации по датам
     def filterByDates(self):
-        # если пользователь нажал на фильтр, и он не был еще применен
-        if self.filter_by_dates.isChecked():
-            # проверка на то, что пользователь еще не вошел в аккаунт
-            if self.statusBarChange("Войдите в аккаунт, чтобы отфильтровать записи",
-                                    self.user_id is None):
-                return
-            # проверка на то, что записей в таблице не меньше одной
-            if self.statusBarChange("Должна быть хотя бы одна запись", not len(self.table)):
-                return
-
-            # получаем все даты, которые выбирал пользователь
-            dates = sorted(list(set(map(lambda x: x[1], self.table))))
-
-            filter_form = DateFilterDialog(self.user_id, self.table, dates, parent=self)
-            filter_form.exec_()
-
-            # отображаем новую таблицу
-            self.showNotes()
-        else:
-            self.setTable(self.getDataFromDb())
+        self.filter_(self.filter_by_dates, DateFilterDialog, 1)
 
     # метод для фильтрации по ценам
     def filterByCosts(self):
-        # если пользователь нажал на фильтр, и он не был еще применен
-        if self.filter_by_costs.isChecked():
-            # проверка на то, что пользователь еще не вошел в аккаунт
-            if self.statusBarChange("Войдите в аккаунт, чтобы отфильтровать записи",
-                                    self.user_id is None):
-                return
-            # проверка на то, что записей в таблице не меньше одной
-            if self.statusBarChange("Должна быть хотя бы одна запись", not len(self.table)):
-                return
-
-            # получаем все цены, которые выбирал пользователь
-            costs = sorted(list(set(map(lambda x: x[2], self.table))))
-
-            filter_form = CostFilterDialog(self.user_id, self.table, costs, parent=self)
-            filter_form.exec_()
-
-            # отображаем новую таблицу
-            self.showNotes()
-        else:
-            self.setTable(self.getDataFromDb())
+        self.filter_(self.filter_by_costs, CostFilterDialog, 2)
 
     # метод для сортировки записей в таблице
     def sort(self, index):
@@ -257,7 +278,7 @@ class Window(QMainWindow):
             self.table.sort(key=lambda note: note[index], reverse=True)
 
         # отображаем новую таблицу
-        self.showNotes()
+        self.showNotes(self.table)
 
     # метод для входа в аккаунт
     def signIn(self):
@@ -272,10 +293,10 @@ class Window(QMainWindow):
         self.graph = GraphWidget(self.user_id, self.graph_widget)
         self.graph.show()
 
-        # присваеваим таблицу с удаленными значениями
+        # присваеваим таблицу с значениями из базы данных
         self.setTable(self.getDataFromDb())
         # отображаем новую таблицу
-        self.showNotes()
+        self.showNotes(self.table)
 
     # метод для регистрации нового аккаунта
     def signUp(self):
@@ -290,10 +311,12 @@ class Window(QMainWindow):
         self.graph = GraphWidget(self.user_id, self.graph_widget)
         self.graph.show()
 
-        # очищаем таблицу
-        self.table.clear()
-        # отображаем новую таблицу
-        self.showNotes()
+        # очищаем таблицы
+        self.setTable([])
+        self.setFilteredTable([])
+
+        # отображаем таблицу
+        self.showNotes(self.table)
 
     # метод для выхода из аккаунта
     def logOut(self):
@@ -305,10 +328,12 @@ class Window(QMainWindow):
         self.graph.clear()
         self.graph.hide()
 
-        # очищаем таблицу
-        self.table.clear()
+        # очищаем таблицы
+        self.setTable([])
+        self.setFilteredTable([])
+
         # отображаем новую таблицу
-        self.showNotes()
+        self.showNotes(self.table)
 
         self.user_id = None
 
