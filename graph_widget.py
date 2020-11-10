@@ -328,7 +328,7 @@ class GraphWidget(QWidget):
         else:
             return None
 
-    # метод для установки минимальной даты
+    # метод для установки минимальной и максимальной даты
     def updateDateEdit(self):
         min_date = self.findMinDate()
         if min_date:
