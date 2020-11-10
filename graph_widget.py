@@ -31,7 +31,7 @@ def list_dates_to_format(dates):
 
 # функция форматирования строки для создания круговой диаграммы
 def format_string(pct, number):
-    return "{:d} руб.\n({:.1f}%)".format(int(pct / 100. * np.sum(number)), pct)
+    return "{:.2f} руб.\n({:.2f}%)".format(float(pct / 100. * np.sum(number)), pct)
 
 
 # функция приведения полученных данных к удобному виду для построения столбчатой диаграммы и графика
