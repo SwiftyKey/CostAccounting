@@ -78,7 +78,7 @@ def do_data_to_format_pie_graph(data):
     return format_data
 
 
-class GraphWidget(QWidget):  # класс виджета для построения графиков на основе данных базы данных
+class GraphWidget(QWidget):  # класс виджета для построения графиков на основе данных из db
     def __init__(self, user_id, parent=None):
         super(GraphWidget, self).__init__(parent)
 
