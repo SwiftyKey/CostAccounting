@@ -124,8 +124,6 @@ class GraphWidget(QWidget):
         self.last_date_year, self.last_date_month, self.last_date_day = user_data[3:6]
         self.index_diagram, self.list_categories = user_data[6:]
 
-        self.updateListCategories()
-
         if self.index_diagram == 0:
             self.buildPiePlot()
         elif self.index_diagram == 1:
