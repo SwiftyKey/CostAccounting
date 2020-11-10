@@ -319,14 +319,32 @@ class GraphWidget(QWidget):  # класс виджета для построен
         else:
             return None
 
+    def findMaxDate(self):
+        cur = self.con.cursor()
+        min_date = cur.execute("SELECT MAX (Date) FROM COST WHERE UserId = ?",
+                               (self.getUserId(),)).fetchone()[0]
+        if min_date:
+            year, month, day = min_date.split('-')
+            return year, month, day
+        else:
+            return None
+
     # метод для установки минимальной даты
     def updateDateEdit(self):
-        if self.findMinDate():
-            year, day, month = self.findMinDate()
+        result = self.findMinDate()
+        if result:
+            year, day, month = result
             self.dateEdit.setDate(QDate(int(year), int(day), int(month)))
         else:
             self.dateEdit.setDate(QDate.currentDate())
 
+        result = self.findMaxDate()
+        if result:
+            year, day, month = result
+            self.dateEdit_2.setDate(QDate(int(year), int(day), int(month)))
+        else:
+            self.dateEdit.setDate(QDate.currentDate())
+            
     # метод для получения id пользователя
     def getUserId(self):
         return self.user_id
