@@ -4,8 +4,8 @@ import hashlib
 import graph_widget
 
 from PyQt5 import uic, QtGui
-from PyQt5.QtCore import QDate, Qt
-from PyQt5.QtWidgets import QDialog, QInputDialog, QListWidgetItem
+from PyQt5.QtCore import QDate
+from PyQt5.QtWidgets import QDialog, QInputDialog
 
 # Глобальная переменная для хранения минимальной длины пароля
 LENGTH = 9
@@ -152,6 +152,7 @@ class OperationsDialog(QDialog):
 
     # метод для добавления новой категории
     def newCategory(self):
+        self.status.clear()
         # создаем диалог ввода названия новой категории
         title = QInputDialog.getText(self, "Новая категория",
                                      "Введите название новой категории")
@@ -159,16 +160,22 @@ class OperationsDialog(QDialog):
         if title[0] and title[1]:
             # добавляем новую категорию в базу данных
             cur = self.con.cursor()
-            cur.execute(f"INSERT INTO Category(Title) VALUES('{title[0]}')")
-            cur.close()
-            self.con.commit()
+            # проверяем, что такой категории еще нет
+            if not cur.execute(f'''SELECT CategoryId FROM Category 
+WHERE Title="{title[0]}"''').fetchone():
+                cur.execute(f"INSERT INTO Category(Title) VALUES('{title[0]}')")
+                cur.close()
+                self.con.commit()
 
-            # обновляем список категорий для виджета графика
-            self.parent().graph.updateListCategories()
+                # обновляем список категорий для виджета графика
+                self.parent().graph.updateListCategories()
 
-            # добавляем новую категорию в combo box и делаем его текущим
-            self.select_category.insertItem(0, title[0])
-            self.select_category.setCurrentIndex(0)
+                # добавляем новую категорию в combo box и делаем его текущим
+                self.select_category.insertItem(0, title[0])
+                self.select_category.setCurrentIndex(0)
+            else:
+                self.status.setText("Такая категория уже есть")
+                self.select_category.setCurrentText(title[0])
 
     # метод для отмены добавления или изменения записи
     def exit(self):
@@ -198,11 +205,6 @@ WHERE Title = "{self.select_category.currentText()}"''').fetchone()[0]
 VALUES({self.user_id}, {self.category}, "{self.date}", {self.cost})''')
         cur.close()
         self.con.commit()
-        # добавляем запись в таблицу
-        self.parent().setTable(self.parent().getTable() + [(self.select_category.currentText(),
-                                                            self.date, int(self.cost)
-                                                            if self.cost.is_integer()
-                                                            else self.cost)])
 
         self.parent().graph.updateDateEdit()
 
@@ -247,130 +249,10 @@ AND Date="{self.date}" AND SumCost={self.cost}''').fetchone()[0]
             # изменяем запись базе данных
             cur.execute(f'''UPDATE Cost SET UserId={self.user_id}, 
 CategoryId={category}, Date="{date}", SumCost={cost} WHERE CostId={cost_id}''')
-            # изменяем запись в таблице
-            table = self.parent().getTable()
-            del table[self.row]
-            category = cur.execute(f'''SELECT Title FROM Category 
-WHERE CategoryId={category}''').fetchone()[0]
-            table.insert(self.row, (category, date, cost))
-            self.parent().setTable(table)
         cur.close()
         self.con.commit()
 
         self.parent().graph.updateDateEdit()
-
-        self.exit()
-
-
-# родительский класс для фильтрации записей
-class FilterDialog(QDialog):
-    def __init__(self, user_id, table, filename, title, *args, parent=None):
-        super(FilterDialog, self).__init__(parent)
-
-        self.user_id = user_id
-        self.args = args[0][0]
-        self.table = table
-
-        # загружаем ui диалога
-        self.loadUI(filename, title)
-
-        self.button_filter.clicked.connect(self.filterOut)
-        self.button_exit.clicked.connect(self.exit)
-
-    # метод для отображения ui диалога
-    def loadUI(self, filename, title):
-        uic.loadUi(filename, self)
-        self.setWindowTitle(title)
-
-    # метод фильтрации
-    def filterOut(self):
-        pass
-
-    # метод для отмены фильтрации записей
-    def exit(self):
-        self.close()
-
-
-# класс предок фильтрации записей по категориям
-class CategoryFilterDialog(FilterDialog):
-    def __init__(self, user_id, table, *categories, parent=None):
-        super(CategoryFilterDialog, self).__init__(user_id, table,
-                                                   "ui/filter_by_categories_dialog.ui",
-                                                   "Фильтр по категория", categories, parent=parent)
-        # добавляем категории в список
-        for category in self.args:
-            item = QListWidgetItem(category)
-            item.setCheckState(Qt.Checked)
-            self.listWidget.addItem(item)
-
-    # метод фильтрации
-    def filterOut(self):
-        categories_checked = []
-        for i in range(self.listWidget.count()):
-            list_item = self.listWidget.item(i)
-            # добавляем выбранные категории
-            if list_item.checkState():
-                categories_checked.append(list_item.text())
-
-        # присваеваим отфильтрованную таблицу
-        self.parent().setFilteredTable(list(filter(lambda x: x[0] in categories_checked,
-                                                   self.table)))
-        # устанавливаем параметр фильтрации
-        self.parent().setFilterParameter("by_categories", lambda x: x[0] in categories_checked)
-
-        self.exit()
-
-
-# класс предок фильтрации записей по датам
-class DateFilterDialog(FilterDialog):
-    def __init__(self, user_id, table, *dates, parent=None):
-        super(DateFilterDialog, self).__init__(user_id, table, "ui/filter_by_dates_dialog.ui",
-                                               "Фильтр по датам", dates, parent=parent)
-
-        # устанавливаем минимальную дату
-        year_from, month_from, day_from = list(map(int, self.args[0].split('-')))
-        self.date_from.setDate(QDate(year_from, month_from, day_from))
-
-        # устанавливаем максимальную дату
-        year_to, month_to, day_to = list(map(int, self.args[-1].split('-')))
-        self.date_to.setDate(QDate(year_to, month_to, day_to))
-
-    def filterOut(self):
-        date_from = self.date_from.date().toString("yyyy-MM-dd")
-        date_to = self.date_to.date().toString("yyyy-MM-dd")
-
-        # присваеваим отфильтрованную таблицу
-        self.parent().setFilteredTable(list(filter(lambda x: date_from <= x[1] <= date_to,
-                                                   self.table)))
-        # устанавливаем параметр фильтрации
-        self.parent().setFilterParameter("by_dates", lambda x: date_from <= x[1] <= date_to)
-
-        self.exit()
-
-
-# класс предок фильтрации записей по ценам
-class CostFilterDialog(FilterDialog):
-    def __init__(self, user_id, table, *costs, parent=None):
-        super(CostFilterDialog, self).__init__(user_id, table, "ui/filter_by_costs_dialog.ui",
-                                               "Фильтр по ценам", costs, parent=parent)
-
-        # настраиваем double spin box'ы
-        self.cost_from.setRange(float(self.args[0]), float(self.args[-1]))
-        self.cost_to.setRange(float(self.args[0]), float(self.args[-1]))
-        # устанавливаем минимальную цену
-        self.cost_from.setValue(float(self.args[0]))
-        # устанавливаем максимальную цену
-        self.cost_to.setValue(float(self.args[-1]))
-
-    def filterOut(self):
-        cost_from = self.cost_from.value()
-        cost_to = self.cost_to.value()
-
-        # присваеваим отфильтрованную таблицу
-        self.parent().setFilteredTable(list(filter(lambda x: cost_from <= x[2] <= cost_to,
-                                                   self.table)))
-        # устанавливаем параметр фильтрации
-        self.parent().setFilterParameter("by_dates", lambda x: cost_from <= x[2] <= cost_to)
 
         self.exit()
 
