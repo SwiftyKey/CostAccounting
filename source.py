@@ -176,6 +176,8 @@ class Window(QMainWindow):
                 cur.close()
                 self.con.commit()
 
+                self.graph.updateDateEdit()
+
                 # отображаем новую таблицу
                 self.showNotes(self.table)
         else:
@@ -217,7 +219,7 @@ class Window(QMainWindow):
                 return
 
             # создаем таблицу для фильтрации
-            self.setFilteredTable(self.getTable())
+            self.setFilteredTable(self.getFilteredTable())
 
             # получаем все данные, которые выбирал пользователь
             args = sorted(list(set(map(lambda x: x[index], self.getFilteredTable()))))
@@ -295,6 +297,8 @@ class Window(QMainWindow):
 
         # присваеваим таблицу с значениями из базы данных
         self.setTable(self.getDataFromDb())
+        # присваеваим данные отфильтрованной таблице
+        self.setFilteredTable(self.getTable())
         # отображаем новую таблицу
         self.showNotes(self.table)
 
@@ -307,16 +311,18 @@ class Window(QMainWindow):
         sign_up_form = SignUpDialog(self)
         sign_up_form.exec_()
 
-        # показываем виджет графика
-        self.graph = GraphWidget(self.user_id, self.graph_widget)
-        self.graph.show()
+        # если пользователь зарегистрировался
+        if self.user_id:
+            # показываем виджет графика
+            self.graph = GraphWidget(self.user_id, self.graph_widget)
+            self.graph.show()
 
-        # очищаем таблицы
-        self.setTable([])
-        self.setFilteredTable([])
+            # очищаем таблицы
+            self.setTable([])
+            self.setFilteredTable([])
 
-        # отображаем таблицу
-        self.showNotes(self.table)
+            # отображаем таблицу
+            self.showNotes(self.table)
 
     # метод для выхода из аккаунта
     def logOut(self):
@@ -325,8 +331,8 @@ class Window(QMainWindow):
             return
 
         # очищаем виджет графика и скрываем его
-        self.graph.clear()
         self.graph.hide()
+        self.graph = None
 
         # очищаем таблицы
         self.setTable([])

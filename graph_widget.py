@@ -109,6 +109,8 @@ class GraphWidget(QWidget):
 
         self.dateEdit_2.setDate(QDate.currentDate())
 
+        self.pushButton.clicked.connect(self.plot)
+
         self.updateDateEdit()
 
     def __del__(self):
@@ -117,7 +119,7 @@ class GraphWidget(QWidget):
     # метод для построения НЕОБХОДИМОЙ нам диаграммы
     def plot(self):
         # получаем все нужные данные для построения диаграмм
-        user_data = self.get_users_data()
+        user_data = self.gerUserData()
         self.first_date_year, self.first_date_month, self.first_date_day = user_data[:3]
         self.last_date_year, self.last_date_month, self.last_date_day = user_data[3:6]
         self.index_diagram, self.list_categories = user_data[6:]
@@ -125,21 +127,21 @@ class GraphWidget(QWidget):
         self.updateListCategories()
 
         if self.index_diagram == 0:
-            self.build_pie_plot()
+            self.buildPiePlot()
         elif self.index_diagram == 1:
-            self.build_plot()
+            self.buildPlot()
         else:
-            self.build_bar_plot()
+            self.buildBarPlot()
 
     # метод для очистки поля для построения графиков
     def clear(self):
         self.figure.clear()
 
     # метод для построения круговой диаграммы
-    def build_pie_plot(self):
+    def buildPiePlot(self):
         self.clear()
 
-        data, labels_graph, _ = self.find_information_for_graph()
+        data, labels_graph, _ = self.findInfo()
         data = do_data_to_format_pie_graph(data)
 
         # если были найдены данные в таблице, то рисуем по ним график
@@ -164,10 +166,10 @@ class GraphWidget(QWidget):
                                                 " введены верно и повторите запрос.")
 
     # метод для построения столбчатой диаграммы
-    def build_bar_plot(self):
+    def buildBarPlot(self):
         self.clear()
 
-        data, labels_graph, dates = self.find_information_for_graph()
+        data, labels_graph, dates = self.findInfo()
         data_to_build_graph, all_dates = \
             do_data_to_format_bar_and_plot_graph(data, labels_graph, list_dates_to_format(dates))
 
@@ -200,10 +202,10 @@ class GraphWidget(QWidget):
                                                 "верно и повторите запрос.")
 
     # метод для построения графика
-    def build_plot(self):
+    def buildPlot(self):
         self.clear()
 
-        data, labels_graph, data_to_build_graph = self.find_information_for_graph()
+        data, labels_graph, data_to_build_graph = self.findInfo()
 
         data_to_build_graph, all_dates = \
             do_data_to_format_bar_and_plot_graph(data, labels_graph,
@@ -231,7 +233,7 @@ class GraphWidget(QWidget):
                                                 " верно и повторите запрос.")
 
     # метод для нахождения суммы расходов по категориям
-    def find_information_for_graph(self):
+    def findInfo(self):
         first_date = date(self.first_date_year, self.first_date_month, self.first_date_day).strftime(
             "%Y-%m-%d")
         second_date = date(self.last_date_year, self.last_date_month, self.last_date_day).strftime(
@@ -247,7 +249,7 @@ class GraphWidget(QWidget):
         something = 0
         result = cur.execute("""SELECT * FROM Cost 
         WHERE (date(Date) >= date(?) and date(Date) <= date(?)) and UserId = ?""",
-                             (first_date, second_date, self.get_id())).fetchall()
+                             (first_date, second_date, self.getUserId())).fetchall()
 
         # получаем все данные, удовлетворяющие временному отрезку, указанному пользователем
         for i in range(len(result)):
@@ -273,7 +275,7 @@ class GraphWidget(QWidget):
         return data, labels, dates
 
     # метод для получения необходимой для нас информации для построения диаграммы
-    def get_users_data(self):
+    def gerUserData(self):
         list_categories = []
 
         for i in range(self.listWidget.count()):
@@ -291,6 +293,7 @@ class GraphWidget(QWidget):
                   last_date.year(), last_date.month(), last_date.day(), diagram, list_categories]
         return result
 
+    # обновление списка категорий
     def updateListCategories(self):
         cur = self.con.cursor()
         iterations = cur.execute('SELECT title FROM Category').fetchall()
@@ -306,27 +309,28 @@ class GraphWidget(QWidget):
             self.listWidget.addItem(item)
 
     # метод для нахождения минимальной даты в записях
-    def find_min_date(self):
+    def findMinDate(self):
         cur = self.con.cursor()
         min_date = cur.execute("SELECT MIN (Date) FROM COST WHERE UserId = ?",
-                               (self.get_id(),)).fetchone()[0]
+                               (self.getUserId(),)).fetchone()[0]
         if min_date:
             year, month, day = min_date.split('-')
             return year, month, day
         else:
             return None
 
+    # метод для установки минимальной даты
     def updateDateEdit(self):
-        if self.find_min_date():
-            year, day, month = self.find_min_date()
+        if self.findMinDate():
+            year, day, month = self.findMinDate()
             self.dateEdit.setDate(QDate(int(year), int(day), int(month)))
         else:
             self.dateEdit.setDate(QDate.currentDate())
 
     # метод для получения id пользователя
-    def get_id(self):
+    def getUserId(self):
         return self.user_id
 
     # метод для присваиваня нового id пользователя
-    def set_id(self, user_id):
+    def setUserId(self, user_id):
         self.user_id = user_id
