@@ -1,7 +1,6 @@
 import sqlite3
 import uuid
 import hashlib
-import datetime
 import graph_widget
 
 from PyQt5 import uic, QtGui
@@ -141,10 +140,7 @@ class OperationsDialog(QDialog):
         self.select_cost.setSingleStep(0.01)
         self.select_cost.setRange(0.01, 10e9)
 
-        # добавляем в date edit дату текущего дня
-        today = datetime.date.today()
-        year, month, day = today.year, today.month, today.day
-        self.select_date.setDate(QDate(year, month, day))
+        self.select_date.setDate(QDate.currentDate())
 
         self.button_create_category.clicked.connect(self.newCategory)
         self.button_exit.clicked.connect(self.exit)
@@ -166,6 +162,9 @@ class OperationsDialog(QDialog):
             cur.execute(f"INSERT INTO Category(Title) VALUES('{title[0]}')")
             cur.close()
             self.con.commit()
+
+            # обновляем список категорий для виджета графика
+            self.parent().graph.updateListCategories()
 
             # добавляем новую категорию в combo box и делаем его текущим
             self.select_category.insertItem(0, title[0])
@@ -204,6 +203,8 @@ VALUES({self.user_id}, {self.category}, "{self.date}", {self.cost})''')
                                                             self.date, int(self.cost)
                                                             if self.cost.is_integer()
                                                             else self.cost)])
+
+        self.parent().graph.updateDateEdit()
 
         self.exit()
 
@@ -255,6 +256,8 @@ WHERE CategoryId={category}''').fetchone()[0]
             self.parent().setTable(table)
         cur.close()
         self.con.commit()
+
+        self.parent().graph.updateDateEdit()
 
         self.exit()
 
