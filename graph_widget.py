@@ -105,8 +105,6 @@ class GraphWidget(QWidget):
         self.last_date_year, self.last_date_month, self.last_date_day = None, None, None
         self.index_diagram, self.list_categories = None, None
 
-        self.dateEdit.setMaximumDate(QDate.currentDate())
-        self.dateEdit_2.setMaximumDate(QDate.currentDate())
         self.dateEdit.setDate(QDate.currentDate())
         self.dateEdit_2.setDate(QDate.currentDate())
 
@@ -322,26 +320,26 @@ class GraphWidget(QWidget):
 
     def findMaxDate(self):
         cur = self.con.cursor()
-        min_date = cur.execute("SELECT MAX (Date) FROM COST WHERE UserId = ?",
+        max_date = cur.execute("SELECT MAX (Date) FROM COST WHERE UserId = ?",
                                (self.getUserId(),)).fetchone()[0]
-        if min_date:
-            year, month, day = min_date.split('-')
+        if max_date:
+            year, month, day = max_date.split('-')
             return year, month, day
         else:
             return None
 
     # метод для установки минимальной даты
     def updateDateEdit(self):
-        result = self.findMinDate()
-        if result:
-            year, day, month = result
+        min_date = self.findMinDate()
+        if min_date:
+            year, day, month = min_date
             self.dateEdit.setDate(QDate(int(year), int(day), int(month)))
         else:
             self.dateEdit.setDate(QDate.currentDate())
 
-        result = self.findMaxDate()
-        if result:
-            year, day, month = result
+        max_date = self.findMaxDate()
+        if max_date:
+            year, day, month = max_date
             self.dateEdit_2.setDate(QDate(int(year), int(day), int(month)))
         else:
             self.dateEdit.setDate(QDate.currentDate())
