@@ -31,7 +31,7 @@ def list_dates_to_format(dates):
 
 # функция форматирования строки для создания круговой диаграммы
 def format_string(pct, number):
-    return "{:d} руб.\n({:.1f}%)".format(int(pct / 100. * np.sum(number)), pct)
+    return "{:.2f} руб.\n({:.2f}%)".format(float(pct / 100. * np.sum(number)), pct)
 
 
 # функция приведения полученных данных к удобному виду для построения столбчатой диаграммы и графика
@@ -78,7 +78,7 @@ def do_data_to_format_pie_graph(data):
     return format_data
 
 
-class GraphWidget(QWidget):
+class GraphWidget(QWidget):  # класс виджета для построения графиков на основе данных из db
     def __init__(self, user_id, parent=None):
         super(GraphWidget, self).__init__(parent)
 
@@ -106,7 +106,7 @@ class GraphWidget(QWidget):
 
         self.dateEdit.setMaximumDate(QDate.currentDate())
         self.dateEdit_2.setMaximumDate(QDate.currentDate())
-
+        self.dateEdit.setDate(QDate.currentDate())
         self.dateEdit_2.setDate(QDate.currentDate())
 
         self.pushButton.clicked.connect(self.plot)
@@ -123,8 +123,6 @@ class GraphWidget(QWidget):
         self.first_date_year, self.first_date_month, self.first_date_day = user_data[:3]
         self.last_date_year, self.last_date_month, self.last_date_day = user_data[3:6]
         self.index_diagram, self.list_categories = user_data[6:]
-
-        self.updateListCategories()
 
         if self.index_diagram == 0:
             self.buildPiePlot()
@@ -301,6 +299,8 @@ class GraphWidget(QWidget):
         names_categories = [i[0] for i in iterations]
         self.list_categories = names_categories
         # ListWidget заполняется категориями из БД с возможностью отмечать необходимые ему категории
+
+        self.listWidget.clear()
 
         for i in names_categories:
             item = QListWidgetItem()
