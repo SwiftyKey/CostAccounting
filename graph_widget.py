@@ -318,6 +318,7 @@ class GraphWidget(QWidget):
         else:
             return None
 
+    # метод для нахождения максимальной даты в записях
     def findMaxDate(self):
         cur = self.con.cursor()
         max_date = cur.execute("SELECT MAX (Date) FROM COST WHERE UserId = ?",
