@@ -43,6 +43,7 @@ class Window(QMainWindow):
         self.tableWidget.horizontalHeader().sectionClicked.connect(self.sort)
 
     def __del__(self):
+        self.logOut()
         self.con.close()
 
     # метод для получения данных в таблицу из базы данных
@@ -63,9 +64,17 @@ class Window(QMainWindow):
     def setTable(self, new_table):
         self.table = new_table
 
+    # метод для присваивания id пользователя
+    def setUserId(self, user_id):
+        self.user_id = user_id
+
     # метод для получения таблицы данных
     def getTable(self):
         return self.table
+
+    # метод для получения id пользователя
+    def getUserId(self):
+        return self.user_id
 
     # метод для отображения таблицы в виджете
     def showNotes(self):
@@ -253,13 +262,6 @@ class Window(QMainWindow):
         self.showNotes()
 
         self.setUserId(None)
-
-    # метод для присваивания id пользователя
-    def setUserId(self, user_id):
-        self.user_id = user_id
-
-    def getUserId(self):
-        return self.user_id
 
     # метод для отображения ошибок в статус баре
     def statusBarChange(self, message, condition):
