@@ -292,7 +292,6 @@ class Window(QMainWindow):
         # показываем виджет графика
         self.graph = GraphWidget(self.user_id, self.graph_widget)
         self.graph.show()
-        self.graph.up
 
         # присваеваим таблицу с значениями из базы данных
         self.setTable(self.getDataFromDb())

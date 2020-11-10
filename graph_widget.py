@@ -98,18 +98,7 @@ class GraphWidget(QWidget):
         self.verticalLayout_3.addWidget(self.label_if_not_found_inf)
 
         self.con = sqlite3.connect('Cost.db')
-        cur = self.con.cursor()
-        iterations = cur.execute('SELECT title FROM Category').fetchall()
-        # получаем список всех категорий из БД
-        names_categories = [i[0] for i in iterations]
-        self.list_categories = names_categories
-        # ListWidget заполняется категориями из БД с возможностью отмечать необходимые ему категории
-
-        for i in names_categories:
-            item = QListWidgetItem()
-            item.setText(i)
-            item.setCheckState(Qt.Checked)
-            self.listWidget.addItem(item)
+        self.updateListCategories()
 
         self.first_date_year, self.first_date_month, self.first_date_day = None, None, None
         self.last_date_year, self.last_date_month, self.last_date_day = None, None, None
@@ -120,13 +109,7 @@ class GraphWidget(QWidget):
 
         self.dateEdit_2.setDate(QDate.currentDate())
 
-        if self.find_min_date():
-            year, day, month = self.find_min_date()
-            self.dateEdit_2.setDate(QDate(int(day), int(month), int(year)))
-        else:
-            self.dateEdit_2.setDate(QDate.currentDate())
-
-        self.pushButton.clicked.connect(self.plot)
+        self.updateDateEdit()
 
     def __del__(self):
         self.con.close()
@@ -138,6 +121,8 @@ class GraphWidget(QWidget):
         self.first_date_year, self.first_date_month, self.first_date_day = user_data[:3]
         self.last_date_year, self.last_date_month, self.last_date_day = user_data[3:6]
         self.index_diagram, self.list_categories = user_data[6:]
+
+        self.updateListCategories()
 
         if self.index_diagram == 0:
             self.build_pie_plot()
@@ -306,6 +291,20 @@ class GraphWidget(QWidget):
                   last_date.year(), last_date.month(), last_date.day(), diagram, list_categories]
         return result
 
+    def updateListCategories(self):
+        cur = self.con.cursor()
+        iterations = cur.execute('SELECT title FROM Category').fetchall()
+        # получаем список всех категорий из БД
+        names_categories = [i[0] for i in iterations]
+        self.list_categories = names_categories
+        # ListWidget заполняется категориями из БД с возможностью отмечать необходимые ему категории
+
+        for i in names_categories:
+            item = QListWidgetItem()
+            item.setText(i)
+            item.setCheckState(Qt.Checked)
+            self.listWidget.addItem(item)
+
     # метод для нахождения минимальной даты в записях
     def find_min_date(self):
         cur = self.con.cursor()
@@ -316,6 +315,13 @@ class GraphWidget(QWidget):
             return year, month, day
         else:
             return None
+
+    def updateDateEdit(self):
+        if self.find_min_date():
+            year, day, month = self.find_min_date()
+            self.dateEdit.setDate(QDate(int(year), int(day), int(month)))
+        else:
+            self.dateEdit.setDate(QDate.currentDate())
 
     # метод для получения id пользователя
     def get_id(self):
