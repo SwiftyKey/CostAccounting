@@ -89,14 +89,6 @@
     <addaction name="sign_up"/>
     <addaction name="action_exit"/>
    </widget>
-   <widget class="QMenu" name="filter">
-    <property name="title">
-     <string>Фильтр</string>
-    </property>
-    <addaction name="filter_by_categories"/>
-    <addaction name="filter_by_dates"/>
-    <addaction name="filter_by_costs"/>
-   </widget>
    <widget class="QMenu" name="operations">
     <property name="title">
      <string>Операции с записями</string>
@@ -107,7 +99,6 @@
    </widget>
    <addaction name="authorization"/>
    <addaction name="operations"/>
-   <addaction name="filter"/>
   </widget>
   <action name="sign_in">
    <property name="text">
