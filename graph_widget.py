@@ -106,7 +106,7 @@ class GraphWidget(QWidget):
 
         self.dateEdit.setMaximumDate(QDate.currentDate())
         self.dateEdit_2.setMaximumDate(QDate.currentDate())
-
+        self.dateEdit.setDate(QDate.currentDate())
         self.dateEdit_2.setDate(QDate.currentDate())
 
         self.updateDateEdit()
