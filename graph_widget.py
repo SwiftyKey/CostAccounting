@@ -302,6 +302,8 @@ class GraphWidget(QWidget):
         self.list_categories = names_categories
         # ListWidget заполняется категориями из БД с возможностью отмечать необходимые ему категории
 
+        self.listWidget.clear()
+
         for i in names_categories:
             item = QListWidgetItem()
             item.setText(i)
