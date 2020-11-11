@@ -78,6 +78,19 @@ def do_data_to_format_pie_graph(data):
     return format_data
 
 
+def count_cost(list_cost, labels):
+    result_sum = 0.
+
+    if labels[-1] == 'Иное':
+        list_cost = list_cost[:-1]
+
+    for i in list_cost:
+        for j in i:
+            result_sum += j
+
+    return result_sum
+
+
 # класс виджета для построения графиков на основе данных из db
 class GraphWidget(QWidget):
     def __init__(self, user_id, parent=None):
@@ -89,14 +102,14 @@ class GraphWidget(QWidget):
 
         self.figure = plt.figure()
 
-        self.label_if_not_found_inf = QLabel(self)
-        self.label_if_not_found_inf.setText("")
+        self.label_sum_cost = QLabel(self)
+        self.label_sum_cost.setText("")
 
         self.figure = plt.figure()
         self.canvas = FigureCanvas(self.figure)
 
         self.verticalLayout_3.addWidget(self.canvas)
-        self.verticalLayout_3.addWidget(self.label_if_not_found_inf)
+        self.verticalLayout_3.addWidget(self.label_sum_cost)
 
         self.con = sqlite3.connect('Cost.db')
         self.updateListCategories()
@@ -139,11 +152,14 @@ class GraphWidget(QWidget):
         self.clear()
 
         data, labels_graph, _ = self.findInfo()
+
+        sum_cost = count_cost(data, labels_graph)
+
         data = do_data_to_format_pie_graph(data)
 
         # если были найдены данные в таблице, то рисуем по ним график
         if labels_graph:
-            self.label_if_not_found_inf.setText("")
+            self.label_sum_cost.setText("")
 
             ax = self.figure.add_subplot(111)
 
@@ -155,12 +171,7 @@ class GraphWidget(QWidget):
             ax.set_title("Круговая диаграмма ваших расходов:")
 
             self.canvas.draw()
-        # иначе выводим надпись о том, что не найдены данные, удовлетворяющие запросу
-        else:
-            self.clear()
-            self.label_if_not_found_inf.setText("Не было найдено информации, "
-                                                "убедитесь, что данные"
-                                                " введены верно и повторите запрос.")
+        self.label_sum_cost.setText(f'За указанный период было потрачено {sum_cost} руб.')
 
     # метод для построения столбчатой диаграммы
     def buildBarPlot(self):
@@ -170,8 +181,10 @@ class GraphWidget(QWidget):
         data_to_build_graph, all_dates = \
             do_data_to_format_bar_and_plot_graph(data, labels_graph, list_dates_to_format(dates))
 
+        sum_cost = count_cost(data, labels_graph)
+
         if labels_graph:
-            self.label_if_not_found_inf.setText("")
+            self.label_sum_cost.setText("")
 
             ax = self.figure.add_subplot(111)
 
@@ -191,12 +204,8 @@ class GraphWidget(QWidget):
             ax.set_ylabel("Затраты")
             ax.set_xlabel("Даты покупок")
             ax.legend()
-
+            self.label_sum_cost.setText(f'За указанный период было потрачено {sum_cost} руб.')
             self.canvas.draw()
-        else:
-            self.label_if_not_found_inf.setText("Не было найдено информации, "
-                                                "убедитесь, что данные введены "
-                                                "верно и повторите запрос.")
 
     # метод для построения графика
     def buildPlot(self):
@@ -207,9 +216,10 @@ class GraphWidget(QWidget):
         data_to_build_graph, all_dates = \
             do_data_to_format_bar_and_plot_graph(data, labels_graph,
                                                  list_dates_to_format(data_to_build_graph))
+        sum_cost = count_cost(data, labels_graph)
 
         if labels_graph:
-            self.label_if_not_found_inf.setText("")
+            self.label_sum_cost.setText("")
 
             ax = self.figure.add_subplot(111)
 
@@ -222,12 +232,8 @@ class GraphWidget(QWidget):
             ax.set_ylabel("Затраты")
             ax.set_xlabel("Даты покупок")
             ax.legend()
-
+            self.label_sum_cost.setText(f'За указанный период было потрачено {sum_cost} руб.')
             self.canvas.draw()
-        else:
-            self.label_if_not_found_inf.setText("Не было найдено информации, "
-                                                "убедитесь, что данные введены"
-                                                " верно и повторите запрос.")
 
     # метод для нахождения суммы расходов по категориям
     def findInfo(self):
@@ -344,7 +350,7 @@ class GraphWidget(QWidget):
             self.dateEdit_2.setDate(QDate(int(year), int(day), int(month)))
         else:
             self.dateEdit.setDate(QDate.currentDate())
-            
+
     # метод для получения id пользователя
     def getUserId(self):
         return self.user_id
