@@ -1,6 +1,9 @@
 import sqlite3
 import sys
 
+from PyQt5.QtCore import Qt
+from PyQt5.QtGui import QFont
+
 from widgets import AddNoteDialog, EditDialog, SignInDialog, SignUpDialog, GraphWidget
 from PyQt5 import uic
 from PyQt5.QtWidgets import QApplication, QMainWindow, QTableWidgetItem, QMessageBox
@@ -85,7 +88,20 @@ class Window(QMainWindow):
                 # меняем формат представления даты
                 if j == 1:
                     value = '.'.join(value.split('-')[::-1])
-                self.tableWidget.setItem(i, j, QTableWidgetItem(str(value)))
+
+                # создаем ячейку
+                item = QTableWidgetItem(str(value))
+
+                # отключаем возможность изменения ячеек
+                item.setFlags(Qt.ItemFlags(Qt.NoItemFlags))
+
+                # меняем шрифт
+                font = QFont("Times", 14)
+                font.setBold(1)
+                item.setFont(font)
+
+                # устанавливаем ячейки
+                self.tableWidget.setItem(i, j, item)
 
     # метод для добавления новой записи
     def add(self):

@@ -1,11 +1,13 @@
 import sqlite3
 import uuid
 import hashlib
+
 import graph_widget
 
-from PyQt5 import uic, QtGui
+from PyQt5 import uic
 from PyQt5.QtCore import QDate
 from PyQt5.QtWidgets import QDialog, QInputDialog
+from PyQt5.QtGui import QFont
 
 # Глобальная переменная для хранения минимальной длины пароля
 LENGTH = 9
@@ -18,7 +20,7 @@ DIGITS = "0123456789"
 
 # функция для изменения обводки виджета при ошибки
 def change_border(widget, color):
-    widget.setFont(QtGui.QFont('Times', 14))
+    widget.setFont(QFont('Times', 14))
     widget.setStyleSheet(f'''border-style: solid; border-width: 1px; border-color: {color};''')
 
 

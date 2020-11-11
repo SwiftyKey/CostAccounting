@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>574</width>
-    <height>168</height>
+    <height>147</height>
    </rect>
   </property>
   <property name="font">
@@ -91,6 +91,12 @@
    </item>
    <item>
     <widget class="QLabel" name="status">
+     <property name="font">
+      <font>
+       <family>MS Shell Dlg 2</family>
+       <pointsize>8</pointsize>
+      </font>
+     </property>
      <property name="text">
       <string/>
      </property>
