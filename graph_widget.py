@@ -1,11 +1,12 @@
-from PyQt5.QtWidgets import QWidget, QListWidgetItem, QLabel
-from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
-from PyQt5.QtCore import Qt, QDate
-import matplotlib.pyplot as plt
-from PyQt5 import uic
-import sqlite3
-from datetime import date
 import numpy as np
+import sqlite3
+import matplotlib.pyplot as plt
+
+from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
+from PyQt5.QtWidgets import QWidget, QListWidgetItem, QLabel
+from PyQt5.QtCore import Qt, QDate
+from PyQt5 import uic
+from datetime import date
 
 
 # функция для сортировки списка дат

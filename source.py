@@ -1,12 +1,11 @@
 import sqlite3
 import sys
 
+from widgets import AddNoteDialog, EditDialog, SignInDialog, SignUpDialog, GraphWidget
+from PyQt5.QtWidgets import QApplication, QMainWindow, QTableWidgetItem, QMessageBox
+from PyQt5 import uic
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QFont
-
-from widgets import AddNoteDialog, EditDialog, SignInDialog, SignUpDialog, GraphWidget
-from PyQt5 import uic
-from PyQt5.QtWidgets import QApplication, QMainWindow, QTableWidgetItem, QMessageBox
 
 
 def except_hook(cls, exception, traceback):
