@@ -78,11 +78,12 @@ def do_data_to_format_pie_graph(data):
     return format_data
 
 
+# функия для подсчета суммы всех расходов по указанным данным
 def count_cost(list_cost, labels):
     result_sum = 0.
-
-    if labels[-1] == 'Иное':
-        list_cost = list_cost[:-1]
+    if labels:
+        if labels[-1] == 'Иное':
+            list_cost = list_cost[:-1]
 
     for i in list_cost:
         for j in i:
@@ -157,16 +158,13 @@ class GraphWidget(QWidget):
 
         data = do_data_to_format_pie_graph(data)
 
-<<<<<<< HEAD
         # если были найдены данные в таблице, то рисуем по ним график
         if labels_graph:
             self.label_sum_cost.setText("")
-=======
         # если не были найдены данные в таблице, то сообщаем пользователю
         if self.parent().parent().parent().statusBarChange('''Проверьте данные и повторите запрос''',
                                                            not labels_graph):
             return
->>>>>>> 01c8d2099ccd2ed4b53029ab9d09deed2d4a5c86
 
         ax = self.figure.add_subplot(111)
 
@@ -177,12 +175,10 @@ class GraphWidget(QWidget):
                   bbox_to_anchor=(1, 0, 0.5, 1))
         ax.set_title("Круговая диаграмма ваших расходов:")
 
-<<<<<<< HEAD
-            self.canvas.draw()
-        self.label_sum_cost.setText(f'За указанный период было потрачено {sum_cost} руб.')
-=======
         self.canvas.draw()
->>>>>>> 01c8d2099ccd2ed4b53029ab9d09deed2d4a5c86
+
+        self.label_sum_cost.setText(f'За указанный период было потрачено {sum_cost} руб.')
+        self.canvas.draw()
 
     # метод для построения столбчатой диаграммы
     def buildBarPlot(self):
@@ -192,17 +188,14 @@ class GraphWidget(QWidget):
         data_to_build_graph, all_dates = \
             do_data_to_format_bar_and_plot_graph(data, labels_graph, list_dates_to_format(dates))
 
-<<<<<<< HEAD
         sum_cost = count_cost(data, labels_graph)
 
         if labels_graph:
             self.label_sum_cost.setText("")
-=======
         # если не были найдены данные в таблице, то сообщаем пользователю
         if self.parent().parent().parent().statusBarChange('''Проверьте данные и повторите запрос''',
                                                            not labels_graph):
             return
->>>>>>> 01c8d2099ccd2ed4b53029ab9d09deed2d4a5c86
 
         ax = self.figure.add_subplot(111)
 
@@ -218,21 +211,21 @@ class GraphWidget(QWidget):
                 values[all_dates.index(data_to_build_graph[i][1][val])] += \
                     data_to_build_graph[i][0][val]
 
-<<<<<<< HEAD
             ax.set_title("Гистограмма ваших расходов:")
             ax.set_ylabel("Затраты")
             ax.set_xlabel("Даты покупок")
             ax.legend()
+
             self.label_sum_cost.setText(f'За указанный период было потрачено {sum_cost} руб.')
+
             self.canvas.draw()
-=======
+
         ax.set_title("Гистограмма ваших расходов:")
         ax.set_ylabel("Затраты")
         ax.set_xlabel("Даты покупок")
         ax.legend()
 
         self.canvas.draw()
->>>>>>> 01c8d2099ccd2ed4b53029ab9d09deed2d4a5c86
 
     # метод для построения графика
     def buildPlot(self):
@@ -245,15 +238,12 @@ class GraphWidget(QWidget):
                                                  list_dates_to_format(data_to_build_graph))
         sum_cost = count_cost(data, labels_graph)
 
-<<<<<<< HEAD
         if labels_graph:
             self.label_sum_cost.setText("")
-=======
         # если не были найдены данные в таблице, то сообщаем пользователю
         if self.parent().parent().parent().statusBarChange('''Проверьте данные и повторите запрос''',
                                                            not labels_graph):
             return
->>>>>>> 01c8d2099ccd2ed4b53029ab9d09deed2d4a5c86
 
         ax = self.figure.add_subplot(111)
 
@@ -262,21 +252,19 @@ class GraphWidget(QWidget):
             ax.plot(data_to_build_graph[i][1], data_to_build_graph[i][0], "o-",
                     label=data_to_build_graph[i][2])
 
-<<<<<<< HEAD
             ax.set_title("График ваших расходов:")
             ax.set_ylabel("Затраты")
             ax.set_xlabel("Даты покупок")
             ax.legend()
             self.label_sum_cost.setText(f'За указанный период было потрачено {sum_cost} руб.')
             self.canvas.draw()
-=======
+
         ax.set_title("График ваших расходов:")
         ax.set_ylabel("Затраты")
         ax.set_xlabel("Даты покупок")
         ax.legend()
 
         self.canvas.draw()
->>>>>>> 01c8d2099ccd2ed4b53029ab9d09deed2d4a5c86
 
     # метод для нахождения суммы расходов по категориям
     def findInfo(self):
