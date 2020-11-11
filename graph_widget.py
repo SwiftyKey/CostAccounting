@@ -161,6 +161,10 @@ class GraphWidget(QWidget):
         # если были найдены данные в таблице, то рисуем по ним график
         if labels_graph:
             self.label_sum_cost.setText("")
+<<<<<<< HEAD
+=======
+
+>>>>>>> 878eb29cbfb1a5b0b9da9a164e376d5007323fd6
         # если не были найдены данные в таблице, то сообщаем пользователю
         if self.parent().parent().parent().statusBarChange('''Проверьте данные и повторите запрос''',
                                                            not labels_graph):
@@ -176,7 +180,10 @@ class GraphWidget(QWidget):
         ax.set_title("Круговая диаграмма ваших расходов:")
 
         self.canvas.draw()
+<<<<<<< HEAD
 
+=======
+>>>>>>> 878eb29cbfb1a5b0b9da9a164e376d5007323fd6
         self.label_sum_cost.setText(f'За указанный период было потрачено {sum_cost} руб.')
         self.canvas.draw()
 
@@ -240,6 +247,10 @@ class GraphWidget(QWidget):
 
         if labels_graph:
             self.label_sum_cost.setText("")
+<<<<<<< HEAD
+=======
+
+>>>>>>> 878eb29cbfb1a5b0b9da9a164e376d5007323fd6
         # если не были найдены данные в таблице, то сообщаем пользователю
         if self.parent().parent().parent().statusBarChange('''Проверьте данные и повторите запрос''',
                                                            not labels_graph):
