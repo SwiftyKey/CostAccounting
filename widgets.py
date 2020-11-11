@@ -5,9 +5,9 @@ import hashlib
 import graph_widget
 
 from PyQt5 import uic
+from PyQt5.QtGui import QFont
 from PyQt5.QtCore import QDate
 from PyQt5.QtWidgets import QDialog, QInputDialog
-from PyQt5.QtGui import QFont
 
 # Глобальная переменная для хранения минимальной длины пароля
 LENGTH = 9
