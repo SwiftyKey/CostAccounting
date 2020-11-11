@@ -158,10 +158,6 @@ class GraphWidget(QWidget):
 
         data = do_data_to_format_pie_graph(data)
 
-        # если были найдены данные в таблице, то рисуем по ним график
-        if labels_graph:
-            self.label_sum_cost.setText("")
-
         # если не были найдены данные в таблице, то сообщаем пользователю
         if self.parent().parent().parent().statusBarChange('''Проверьте данные и повторите запрос''',
                                                            not labels_graph):
@@ -183,16 +179,8 @@ class GraphWidget(QWidget):
 
     # метод для построения столбчатой диаграммы
     def buildBarPlot(self):
-        self.clear()
-
-        data, labels_graph, dates = self.findInfo()
-        data_to_build_graph, all_dates = \
-            do_data_to_format_bar_and_plot_graph(data, labels_graph, list_dates_to_format(dates))
-
-        sum_cost = count_cost(data, labels_graph)
-
-        if labels_graph:
-            self.label_sum_cost.setText("")
+        data_to_build_graph, all_dates, sum_cost, labels_graph = self.getDataToGraph()
+        
         # если не были найдены данные в таблице, то сообщаем пользователю
         if self.parent().parent().parent().statusBarChange('''Проверьте данные и повторите запрос''',
                                                            not labels_graph):
@@ -230,18 +218,7 @@ class GraphWidget(QWidget):
 
     # метод для построения графика
     def buildPlot(self):
-        self.clear()
-
-        data, labels_graph, data_to_build_graph = self.findInfo()
-
-        data_to_build_graph, all_dates = \
-            do_data_to_format_bar_and_plot_graph(data, labels_graph,
-                                                 list_dates_to_format(data_to_build_graph))
-        sum_cost = count_cost(data, labels_graph)
-
-        if labels_graph:
-            self.label_sum_cost.setText("")
-
+        data_to_build_graph, all_dates, sum_cost, labels_graph = self.getDataToGraph()
         # если не были найдены данные в таблице, то сообщаем пользователю
         if self.parent().parent().parent().statusBarChange('''Проверьте данные и повторите запрос''',
                                                            not labels_graph):
@@ -383,6 +360,18 @@ class GraphWidget(QWidget):
             self.dateEdit_2.setDate(QDate(int(year), int(day), int(month)))
         else:
             self.dateEdit.setDate(QDate.currentDate())
+
+    def getDataToGraph(self):
+        self.clear()
+
+        data, labels_graph, data_to_build_graph = self.findInfo()
+
+        data_to_build_graph, all_dates = \
+            do_data_to_format_bar_and_plot_graph(data, labels_graph,
+                                                 list_dates_to_format(data_to_build_graph))
+        sum_cost = count_cost(data, labels_graph)
+
+        return data_to_build_graph, all_dates, sum_cost, labels_graph
 
     # метод для получения id пользователя
     def getUserId(self):
