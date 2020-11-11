@@ -306,7 +306,7 @@ class GraphWidget(QWidget):
                   last_date.year(), last_date.month(), last_date.day(), diagram, list_categories]
         return result
 
-    # обновление списка категорий
+    # метод для обновление списка категорий
     def updateListCategories(self):
         cur = self.con.cursor()
         iterations = cur.execute('SELECT title FROM Category').fetchall()
@@ -361,6 +361,7 @@ class GraphWidget(QWidget):
         else:
             self.dateEdit.setDate(QDate.currentDate())
 
+    # метод для получения данных для построения графика
     def getDataToGraph(self):
         self.clear()
 
