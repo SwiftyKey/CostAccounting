@@ -35,7 +35,7 @@ def hash_password(password):
 
 
 # функция для сравнения введенного пароля пользователем и пароля в базе данных
-def checkPassword(hashed_password, user_password):
+def check_password(hashed_password, user_password):
     password, salt = hashed_password.split(':')
     return password == hashlib.sha256(salt.encode() + user_password.encode()).hexdigest()
 
@@ -293,7 +293,7 @@ WHERE Login = "{login}"''').fetchone()
             # если список пуст, сообщаем, что пользователь ввел неверный логин
             if result:
                 # если пароль не верный, сообщаем, что пользователь ввел неверный пароль
-                if checkPassword(result[1], password):
+                if check_password(result[1], password):
                     # присваиваем id пользователя
                     self.parent().setUserId(result[0])
                     change_border(self.input_login, "black")
