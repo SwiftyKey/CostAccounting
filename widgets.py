@@ -167,7 +167,7 @@ class OperationsDialog(QDialog):
             cur = self.con.cursor()
             # проверяем, что такой категории еще нет
             if not cur.execute(f'''SELECT CategoryId FROM Category 
-WHERE Title="{title[0]}"''').fetchone():
+WHERE Title="{title[0].capitalize()}"''').fetchone():
                 cur.execute(f"INSERT INTO Category(Title) VALUES('{title[0]}')")
                 cur.close()
                 self.con.commit()
