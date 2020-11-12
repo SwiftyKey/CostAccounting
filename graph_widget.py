@@ -175,8 +175,8 @@ class GraphWidget(QWidget):
 
         self.canvas.draw()
 
-        self.label_sum_cost.setText(f'За указанный период было потрачено {sum_cost} руб. '
-                                    f'по выбранным категориям')
+        self.label_sum_cost.setText(
+            f'''За указанный период было потрачено {sum_cost} руб. по выбранным категориям''')
         self.canvas.draw()
 
     # метод для построения столбчатой диаграммы
@@ -207,8 +207,8 @@ class GraphWidget(QWidget):
             ax.set_xlabel("Даты покупок")
             ax.legend()
 
-            self.label_sum_cost.setText(f'За указанный период было потрачено {sum_cost} руб.'
-                                        f'по выбранным категориям')
+            self.label_sum_cost.setText(
+                f'''За указанный период было потрачено {sum_cost} руб. по выбранным категориям''')
 
             self.canvas.draw()
 
@@ -238,8 +238,8 @@ class GraphWidget(QWidget):
             ax.set_ylabel("Затраты")
             ax.set_xlabel("Даты покупок")
             ax.legend()
-            self.label_sum_cost.setText(f'За указанный период было потрачено {sum_cost} руб.'
-                                        f'по выбранным категориям')
+            self.label_sum_cost.setText(
+                f'''За указанный период было потрачено {sum_cost} руб. по выбранным категориям''')
             self.canvas.draw()
 
         ax.set_title("График ваших расходов:")
