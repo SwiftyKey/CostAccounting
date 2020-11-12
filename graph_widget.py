@@ -167,7 +167,7 @@ class GraphWidget(QWidget):
         ax = self.figure.add_subplot(111)
 
         patches, x, t = plt.pie(data, autopct=lambda pct: format_string(pct, data),
-                                textprops=dict(color="w"))
+                                textprops=dict(color="w"), normalize=True)
 
         ax.legend(patches, labels_graph, title="Расходы", loc="lower right",
                   bbox_to_anchor=(1, 0, 0.5, 1))
