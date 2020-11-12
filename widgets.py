@@ -37,7 +37,7 @@ def checkPassword(hashed_password, user_password):
     return password == hashlib.sha256(salt.encode() + user_password.encode()).hexdigest()
 
 
-# родительский класс исключание, связанный с неправильным логином
+# родительский класс исключение, связанный с неправильным логином
 class LoginError(Exception):
     pass
 
@@ -213,7 +213,7 @@ VALUES({self.user_id}, {self.category}, "{self.date}", {self.cost})''')
         self.exit()
 
 
-# класс предок изменеия выбранной записи
+# класс предок изменения выбранной записи
 class EditDialog(OperationsDialog):
     def __init__(self, user_id, category, date, cost, row, parent=None):
         super(EditDialog, self).__init__(user_id, category, date, cost,

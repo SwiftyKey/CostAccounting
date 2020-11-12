@@ -2,10 +2,9 @@ import sqlite3
 import sys
 
 from widgets import AddNoteDialog, EditDialog, SignInDialog, SignUpDialog, GraphWidget
-from PyQt5.QtWidgets import QApplication, QMainWindow, QTableWidgetItem, QMessageBox
+from PyQt5.QtWidgets import QApplication, QMainWindow, QTableWidgetItem, QMessageBox, \
+    QAbstractItemView
 from PyQt5 import uic
-from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QFont
 
 
 def except_hook(cls, exception, traceback):
@@ -91,16 +90,9 @@ class Window(QMainWindow):
                 # создаем ячейку
                 item = QTableWidgetItem(str(value))
 
-                # отключаем возможность изменения ячеек
-                item.setFlags(Qt.ItemFlags(Qt.NoItemFlags))
-
-                # меняем шрифт
-                font = QFont("Times", 14)
-                font.setBold(1)
-                item.setFont(font)
-
                 # устанавливаем ячейки
                 self.tableWidget.setItem(i, j, item)
+        self.tableWidget.setEditTriggers(QAbstractItemView.NoEditTriggers)
 
     # метод для добавления новой записи
     def add(self):
