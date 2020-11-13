@@ -90,7 +90,7 @@ def count_cost(list_cost, labels):
         for j in i:
             result_sum += j
 
-    return result_sum
+    return "{:.2f}".format(result_sum)
 
 
 # класс виджета для построения графиков на основе данных из db
